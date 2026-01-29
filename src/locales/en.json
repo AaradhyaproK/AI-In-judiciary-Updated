@@ -12,7 +12,10 @@
     "pil": "PIL Assistant",
     "zeroFir": "File Zero FIR",
     "rti": "File RTI",
-    "knowYourRights": "Know Your Rights"
+    "knowYourRights": "Know Your Rights",
+    "admin": "Admin Dashboard",
+    "judgeDashboard": "Judge Dashboard",
+    "fileCase": "File New Case"
   },
   "userNav": {
     "logOut": "Log out",
@@ -51,6 +54,7 @@
     "registerAs": "Register as a...",
     "userRole": "User",
     "lawyerRole": "Lawyer",
+    "judgeRole": "Judge",
     "fullNameLabel": "Full Name",
     "fullNamePlaceholder": "Enter your name",
     "emailLabel": "Email",

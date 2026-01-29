@@ -75,39 +75,36 @@ export default function RtiPage() {
         if (!pdfTemplateRef.current) return;
 
         try {
-            const canvas = await html2canvas(pdfTemplateRef.current, { 
-                scale: 2,
-                useCORS: true,
-                windowWidth: 850 // Ensure consistent rendering width
-            });
-            const imgData = canvas.toDataURL('image/jpeg', 0.8);
-
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-
-            while (heightLeft > 0) {
-                position -= pdfHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfHeight;
+            // Ensure html2canvas is available for jsPDF
+            if (typeof window !== 'undefined' && !(window as any).html2canvas) {
+                (window as any).html2canvas = html2canvas;
             }
 
-            pdf.save(`RTI-Application-${values.applicantName.replace(/\s+/g, '-')}.pdf`);
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            await pdf.html(pdfTemplateRef.current, {
+                callback: (doc) => {
+                    doc.save(`RTI-Application-${values.applicantName.replace(/\s+/g, '-')}.pdf`);
+                    setPdfData(null);
+                    setIsGenerating(false);
+                },
+                x: 25,
+                y: 15,
+                width: 160, // 210mm - 50mm margins (25 left, 25 right)
+                windowWidth: 800, // Fixed render width for consistency
+                margin: [15, 25, 15, 25], // Top, Left, Bottom, Right margins
+                autoPaging: 'text', // Avoid cutting text
+                html2canvas: {
+                    scale: 0.2, // Exact scale (160mm / 800px)
+                    useCORS: true,
+                    logging: false
+                }
+            });
         } catch (error) {
             console.error("PDF Generation Error:", error);
+            setPdfData(null);
+            setIsGenerating(false);
         }
-
-        setPdfData(null);
-        setIsGenerating(false);
     };
 
     return (
@@ -241,9 +238,9 @@ export default function RtiPage() {
             </Form>
 
             {/* Hidden PDF Template */}
-            <div className="absolute -left-[99px] top-0 opacity-0 w-[210mm]">
+            <div className="absolute -left-[9999px] top-0 opacity-0 w-[800px]">
                 {pdfData && (
-                    <div ref={pdfTemplateRef} className="px-[20mm] pt-[20mm] pb-[40mm] bg-white text-black font-serif text-[11pt] leading-relaxed">
+                    <div ref={pdfTemplateRef} className="w-[800px] bg-white text-black font-serif text-[12pt] leading-relaxed text-justify">
                         <style>{`
                             .rti-header { text-align: center; margin-bottom: 20px; }
                             .rti-title { font-weight: bold; text-decoration: underline; font-size: 14pt; margin-bottom: 5px; }

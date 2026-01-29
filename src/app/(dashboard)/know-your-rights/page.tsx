@@ -5,10 +5,53 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, BookOpen, GraduationCap, Baby, User, Briefcase, ShoppingCart, ShieldAlert, Info, Home, HeartPulse } from 'lucide-react';
+import { Search, BookOpen, GraduationCap, Baby, User, Briefcase, ShoppingCart, ShieldAlert, Info, Home, HeartPulse, Scale } from 'lucide-react';
 
 // Data
 const RIGHTS_DATA = [
+    // Fundamental Rights
+    {
+        id: 'fr1',
+        title: 'Right to Equality',
+        description: 'Includes Equality before law (Art 14), Prohibition of discrimination (Art 15), Equality of opportunity (Art 16), Abolition of untouchability (Art 17), and Abolition of titles (Art 18).',
+        category: 'Fundamental Rights',
+        article: 'Articles 14–18'
+    },
+    {
+        id: 'fr2',
+        title: 'Right to Freedom',
+        description: 'Includes six freedoms: Speech and expression, Assembly, Association, Movement, Residence, and Profession (Art 19). Also covers protection in conviction (Art 20), Life & Liberty (Art 21), Right to Education (Art 21A), and protection against arrest (Art 22).',
+        category: 'Fundamental Rights',
+        article: 'Articles 19–22'
+    },
+    {
+        id: 'fr3',
+        title: 'Right against Exploitation',
+        description: 'Prohibition of human trafficking and forced labor (Art 23), and prohibition of child labor in hazardous jobs (Art 24).',
+        category: 'Fundamental Rights',
+        article: 'Articles 23–24'
+    },
+    {
+        id: 'fr4',
+        title: 'Right to Freedom of Religion',
+        description: 'Freedom of conscience and free profession, practice, and propagation of religion (Art 25), freedom to manage religious affairs (Art 26), freedom from taxes for religion (Art 27), and freedom from religious instruction (Art 28).',
+        category: 'Fundamental Rights',
+        article: 'Articles 25–28'
+    },
+    {
+        id: 'fr5',
+        title: 'Cultural and Educational Rights',
+        description: 'Protection of interests of minorities (Art 29) and right of minorities to establish and administer educational institutions (Art 30).',
+        category: 'Fundamental Rights',
+        article: 'Articles 29–30'
+    },
+    {
+        id: 'fr6',
+        title: 'Right to Constitutional Remedies',
+        description: 'Right to move the Supreme Court for enforcement of Fundamental Rights (Art 32).',
+        category: 'Fundamental Rights',
+        article: 'Article 32'
+    },
     // Women
     {
         id: 'w1',
@@ -212,6 +255,7 @@ const RIGHTS_DATA = [
 
 const CATEGORIES = [
     { name: 'All', icon: BookOpen },
+    { name: 'Fundamental Rights', icon: Scale },
     { name: 'Women', icon: User },
     { name: 'Children', icon: Baby },
     { name: 'Students', icon: GraduationCap },

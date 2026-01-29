@@ -26,6 +26,7 @@ const SimilarCaseSchema = z.object({
     caseName: z.string().describe("The name of the similar precedent case."),
     summary: z.string().describe("A brief summary of the case and its relevance."),
     citation: z.string().describe("The legal citation for the case."),
+    relevantLinks: z.array(z.string()).optional().describe("List of URLs to the full judgment, case report, or relevant legal articles (e.g. indiankanoon.org)."),
 });
 
 const CaseAnalysisOutputSchema = z.object({
@@ -60,7 +61,7 @@ const prompt = ai.definePrompt({
   3.  The key weaknesses and risks.
   4.  A roadmap of recommended next steps for the user.
   5.  At least two potential outcomes with estimated probabilities. Sort them from most to least likely.
-  6.  A list of 2-3 potentially relevant (but not necessarily binding) similar cases or legal precedents for informational purposes.
+  6.  A list of 2-3 potentially relevant (but not necessarily binding) similar cases or legal precedents for informational purposes. Include valid URLs to these cases (e.g., on Indian Kanoon) or relevant articles if available.
   7.  A standard disclaimer that this is not legal advice and a professional lawyer should be consulted.
 
   Structure your output exactly according to the provided JSON schema.

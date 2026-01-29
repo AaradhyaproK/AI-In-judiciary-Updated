@@ -1,305 +1,247 @@
 'use client';
 
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { useMemo } from 'react';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Briefcase, FileText, Shield, CheckCircle, AlertCircle, Gavel } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Search, BookOpen, GraduationCap, Baby, User, Briefcase, ShoppingCart, ShieldAlert, Info, Home, HeartPulse } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-// Data
-const RIGHTS_DATA = [
-    // Women
-    {
-        id: 'w1',
-        title: 'Right to Zero FIR',
-        description: 'A woman can file an FIR at any police station irrespective of the location of the incident.',
-        category: 'Women',
-        article: 'Section 154 CrPC'
-    },
-    {
-        id: 'w2',
-        title: 'Right to Privacy while Recording Statement',
-        description: 'A woman can record her statement with a female constable and in private.',
-        category: 'Women',
-        article: 'Section 164 CrPC'
-    },
-    {
-        id: 'w3',
-        title: 'No Arrest at Night',
-        description: 'Women cannot be arrested after sunset and before sunrise, except in exceptional circumstances with a magistrate\'s order.',
-        category: 'Women',
-        article: 'Section 46(4) CrPC'
-    },
-    {
-        id: 'w4',
-        title: 'Right to Equal Pay',
-        description: 'Women are entitled to equal pay for equal work as men.',
-        category: 'Women',
-        article: 'Equal Remuneration Act'
-    },
-    {
-        id: 'w5',
-        title: 'Maternity Benefits',
-        description: 'Right to paid maternity leave for 26 weeks for the first two children.',
-        category: 'Women',
-        article: 'Maternity Benefit Act'
-    },
-    {
-        id: 'w6',
-        title: 'Protection from Domestic Violence',
-        description: 'Right to protection against physical, mental, verbal, or economic abuse at home.',
-        category: 'Women',
-        article: 'Domestic Violence Act, 2005'
-    },
+interface UserData {
+  id: string;
+  displayName: string;
+  email: string;
+  role: 'user' | 'lawyer' | 'admin';
+  specialization?: string;
+  location?: string;
+  createdAt?: any;
+}
 
-    // Children
-    {
-        id: 'c1',
-        title: 'Right to Free and Compulsory Education',
-        description: 'Every child between the ages of 6 and 14 has the right to free and compulsory education.',
-        category: 'Children',
-        article: 'Article 21A, RTE Act'
-    },
-    {
-        id: 'c2',
-        title: 'Protection from Child Labor',
-        description: 'Prohibition of employment of children below 14 years in factories, mines, or hazardous employment.',
-        category: 'Children',
-        article: 'Article 24'
-    },
-    {
-        id: 'c3',
-        title: 'Protection from Sexual Offenses (POCSO)',
-        description: 'Strict laws to protect children from sexual assault, harassment, and pornography.',
-        category: 'Children',
-        article: 'POCSO Act, 2012'
-    },
+interface CaseData {
+  id: string;
+  title: string;
+  status: 'active' | 'pending' | 'closed';
+  type: string;
+  clientName?: string;
+  lawyerName?: string;
+  createdAt?: any;
+}
 
-    // Students
-    {
-        id: 's1',
-        title: 'Right to Information',
-        description: 'Students can request copies of their answer sheets and other institutional information.',
-        category: 'Students',
-        article: 'RTI Act, 2005'
-    },
-    {
-        id: 's2',
-        title: 'Anti-Ragging Rights',
-        description: 'Ragging is a criminal offense. Students have the right to a ragging-free campus.',
-        category: 'Students',
-        article: 'UGC Regulations'
-    },
+export default function AdminPage() {
+  const { data: users, loading: usersLoading } = useCollection<UserData>('users');
+  const { data: cases, loading: casesLoading } = useCollection<CaseData>('cases');
 
-    // Employees
-    {
-        id: 'e1',
-        title: 'Right to Minimum Wages',
-        description: 'Every employee has the right to be paid at least the minimum wage fixed by the government.',
-        category: 'Employees',
-        article: 'Minimum Wages Act'
-    },
-    {
-        id: 'e2',
-        title: 'Prevention of Sexual Harassment (POSH)',
-        description: 'Right to a safe workplace free from sexual harassment.',
-        category: 'Employees',
-        article: 'POSH Act, 2013'
-    },
-    {
-        id: 'e3',
-        title: 'Right to Gratuity',
-        description: 'Employees working for 5+ years are entitled to gratuity upon termination/retirement.',
-        category: 'Employees',
-        article: 'Payment of Gratuity Act'
-    },
-
-    // Consumers
-    {
-        id: 'co1',
-        title: 'Right to Safety',
-        description: 'Protection against goods and services that are hazardous to life and property.',
-        category: 'Consumers',
-        article: 'Consumer Protection Act'
-    },
-    {
-        id: 'co2',
-        title: 'Right to Choose',
-        description: 'Right to be assured access to a variety of goods and services at competitive prices.',
-        category: 'Consumers',
-        article: 'Consumer Protection Act'
-    },
-    {
-        id: 'co3',
-        title: 'Right to Seek Redressal',
-        description: 'Right to seek compensation against unfair trade practices or exploitation.',
-        category: 'Consumers',
-        article: 'Consumer Protection Act'
-    },
-
-    // Arrested Persons
-    {
-        id: 'a1',
-        title: 'Right to Know Grounds of Arrest',
-        description: 'Police must inform the arrested person of the grounds of arrest immediately.',
-        category: 'Arrested Persons',
-        article: 'Article 22(1), Section 50 CrPC'
-    },
-    {
-        id: 'a2',
-        title: 'Right to be Produced before Magistrate',
-        description: 'An arrested person must be produced before a magistrate within 24 hours.',
-        category: 'Arrested Persons',
-        article: 'Article 22(2), Section 57 CrPC'
-    },
-    {
-        id: 'a3',
-        title: 'Right to Legal Aid',
-        description: 'Right to consult a lawyer of choice and free legal aid if indigent.',
-        category: 'Arrested Persons',
-        article: 'Article 39A'
-    },
-
-    // Senior Citizens
-    {
-        id: 'sc1',
-        title: 'Right to Maintenance',
-        description: 'Senior citizens can claim maintenance from children/heirs if unable to maintain themselves.',
-        category: 'Senior Citizens',
-        article: 'Maintenance and Welfare of Parents and Senior Citizens Act'
-    },
-    {
-        id: 'sc2',
-        title: 'Tax Benefits',
-        description: 'Higher exemption limits and tax benefits for senior citizens.',
-        category: 'Senior Citizens',
-        article: 'Income Tax Act'
-    },
-
-    // Men
-    {
-        id: 'm1',
-        title: 'Protection against False Dowry Cases',
-        description: 'Legal remedies available against misuse of Section 498A (Dowry Harassment).',
-        category: 'Men',
-        article: 'Judicial Precedents'
-    },
-    {
-        id: 'm2',
-        title: 'Right to Child Custody',
-        description: 'Fathers have equal rights to seek custody of their children.',
-        category: 'Men',
-        article: 'Guardians and Wards Act'
-    },
+  const stats = useMemo(() => {
+    const totalUsers = users.filter(u => u.role === 'user').length;
+    const totalLawyers = users.filter(u => u.role === 'lawyer').length;
+    const totalCases = cases.length;
+    const activeCases = cases.filter(c => c.status === 'active').length;
     
-    // Tenants
-    {
-        id: 't1',
-        title: 'Right against Unfair Eviction',
-        description: 'Landlords cannot evict tenants without proper notice and valid legal grounds.',
-        category: 'Tenants',
-        article: 'Rent Control Act'
-    },
-    {
-        id: 't2',
-        title: 'Right to Essential Services',
-        description: 'Landlord cannot cut off water or electricity supply to force eviction.',
-        category: 'Tenants',
-        article: 'Rent Control Act'
-    }
-];
+    return { totalUsers, totalLawyers, totalCases, activeCases };
+  }, [users, cases]);
 
-const CATEGORIES = [
-    { name: 'All', icon: BookOpen },
-    { name: 'Women', icon: User },
-    { name: 'Children', icon: Baby },
-    { name: 'Students', icon: GraduationCap },
-    { name: 'Employees', icon: Briefcase },
-    { name: 'Consumers', icon: ShoppingCart },
-    { name: 'Arrested Persons', icon: ShieldAlert },
-    { name: 'Senior Citizens', icon: HeartPulse },
-    { name: 'Men', icon: User },
-    { name: 'Tenants', icon: Home },
-];
+  const lawyersList = useMemo(() => users.filter(u => u.role === 'lawyer'), [users]);
+  const usersList = useMemo(() => users.filter(u => u.role === 'user'), [users]);
 
-export default function KnowYourRightsPage() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
-
-    const filteredRights = RIGHTS_DATA.filter(right => {
-        const matchesSearch = right.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              right.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || right.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
-
+  if (usersLoading || casesLoading) {
     return (
-        <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-0 pb-12">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-primary">Know Your Rights</h1>
-                    <p className="text-muted-foreground">Empower yourself with knowledge about your legal rights and protections.</p>
-                </div>
-            </div>
-
-            {/* Search and Filter */}
-            <div className="flex flex-col gap-6">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        placeholder="Search for rights (e.g., arrest, education, maternity)..." 
-                        className="pl-10 h-12 text-lg"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map(cat => {
-                        const Icon = cat.icon;
-                        return (
-                            <Button
-                                key={cat.name}
-                                variant={selectedCategory === cat.name ? "default" : "outline"}
-                                onClick={() => setSelectedCategory(cat.name)}
-                                className="gap-2 rounded-full"
-                            >
-                                <Icon className="h-4 w-4" />
-                                {cat.name}
-                            </Button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Rights Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredRights.length > 0 ? (
-                    filteredRights.map(right => (
-                        <Card key={right.id} className="hover:shadow-md transition-shadow border-l-4 border-l-primary">
-                            <CardHeader>
-                                <div className="flex justify-between items-start gap-2">
-                                    <Badge variant="secondary" className="mb-2">{right.category}</Badge>
-                                    <Badge variant="outline" className="font-mono text-xs">{right.article}</Badge>
-                                </div>
-                                <CardTitle className="text-xl">{right.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <CardDescription className="text-base text-foreground/80">
-                                    {right.description}
-                                </CardDescription>
-                            </CardContent>
-                        </Card>
-                    ))
-                ) : (
-                    <div className="col-span-full text-center py-12 text-muted-foreground">
-                        <Info className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                        <p className="text-lg">No rights found matching your criteria.</p>
-                        <Button variant="link" onClick={() => {setSearchQuery(''); setSelectedCategory('All');}}>Clear filters</Button>
-                    </div>
-                )}
-            </div>
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-xl" />
+          ))}
         </div>
+        <Skeleton className="h-[400px] rounded-xl" />
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-0 pb-12">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Admin Dashboard</h1>
+        <p className="text-muted-foreground">Platform overview and management.</p>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard 
+          title="Total Users" 
+          value={stats.totalUsers} 
+          icon={<Users className="h-4 w-4 text-muted-foreground" />} 
+          description="Registered citizens"
+        />
+        <StatsCard 
+          title="Total Lawyers" 
+          value={stats.totalLawyers} 
+          icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} 
+          description="Verified legal professionals"
+        />
+        <StatsCard 
+          title="Total Cases" 
+          value={stats.totalCases} 
+          icon={<FileText className="h-4 w-4 text-muted-foreground" />} 
+          description="Cases filed on platform"
+        />
+        <StatsCard 
+          title="Active Cases" 
+          value={stats.activeCases} 
+          icon={<Gavel className="h-4 w-4 text-muted-foreground" />} 
+          description="Currently in progress"
+        />
+      </div>
+
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="cases" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="cases">Cases Registry</TabsTrigger>
+          <TabsTrigger value="lawyers">Lawyers Directory</TabsTrigger>
+          <TabsTrigger value="users">Users Directory</TabsTrigger>
+        </TabsList>
+
+        {/* Cases Tab */}
+        <TabsContent value="cases" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Cases</CardTitle>
+              <CardDescription>A list of all cases registered on the platform.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <div className="relative w-full overflow-auto">
+                  <table className="w-full caption-bottom text-sm">
+                    <thead className="[&_tr]:border-b">
+                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Case Title</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Type</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Client</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Assigned Lawyer</th>
+                      </tr>
+                    </thead>
+                    <tbody className="[&_tr:last-child]:border-0">
+                      {cases.length > 0 ? cases.map((c) => (
+                        <tr key={c.id} className="border-b transition-colors hover:bg-muted/50">
+                          <td className="p-4 align-middle font-medium">{c.title}</td>
+                          <td className="p-4 align-middle">{c.type}</td>
+                          <td className="p-4 align-middle">
+                            <Badge variant={c.status === 'active' ? 'default' : c.status === 'closed' ? 'secondary' : 'outline'}>
+                              {c.status}
+                            </Badge>
+                          </td>
+                          <td className="p-4 align-middle">{c.clientName || 'N/A'}</td>
+                          <td className="p-4 align-middle">{c.lawyerName || 'Unassigned'}</td>
+                        </tr>
+                      )) : (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center text-muted-foreground">No cases found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Lawyers Tab */}
+        <TabsContent value="lawyers" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Registered Lawyers</CardTitle>
+              <CardDescription>Manage legal professionals on the platform.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {lawyersList.map((lawyer) => (
+                  <div key={lawyer.id} className="flex items-center justify-between space-x-4 rounded-md border p-4">
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarFallback>{lawyer.displayName?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium leading-none">{lawyer.displayName}</p>
+                        <p className="text-sm text-muted-foreground">{lawyer.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <Badge variant="outline">{lawyer.specialization || 'General'}</Badge>
+                        <span className="text-xs text-muted-foreground">{lawyer.location}</span>
+                    </div>
+                  </div>
+                ))}
+                {lawyersList.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No lawyers registered.</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Registered Users</CardTitle>
+              <CardDescription>Citizens registered on Nyaya Mitra.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <div className="relative w-full overflow-auto">
+                  <table className="w-full caption-bottom text-sm">
+                    <thead className="[&_tr]:border-b">
+                      <tr className="border-b transition-colors hover:bg-muted/50">
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Email</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Location</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role</th>
+                      </tr>
+                    </thead>
+                    <tbody className="[&_tr:last-child]:border-0">
+                      {usersList.map((user) => (
+                        <tr key={user.id} className="border-b transition-colors hover:bg-muted/50">
+                          <td className="p-4 align-middle font-medium">
+                            <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                {user.displayName}
+                            </div>
+                          </td>
+                          <td className="p-4 align-middle">{user.email}</td>
+                          <td className="p-4 align-middle">{user.location || 'N/A'}</td>
+                          <td className="p-4 align-middle"><Badge variant="secondary">User</Badge></td>
+                        </tr>
+                      ))}
+                      {usersList.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="p-4 text-center text-muted-foreground">No users found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function StatsCard({ title, value, icon, description }: { title: string, value: number, icon: React.ReactNode, description: string }) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  );
 }

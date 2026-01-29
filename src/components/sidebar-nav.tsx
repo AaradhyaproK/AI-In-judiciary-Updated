@@ -14,6 +14,7 @@ import {
   User,
   PieChart,
   BookOpen,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -26,7 +27,7 @@ import { useUser } from '@/firebase/auth/use-user';
 import { useDoc } from '@/firebase/firestore/use-doc';
 
 interface UserProfile {
-    role: 'user' | 'lawyer';
+    role: 'user' | 'lawyer' | 'admin' | 'judge';
 }
 
 export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
@@ -49,6 +50,9 @@ export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
     { href: '/legal-research', icon: ScrollText, label: t('sidebar.legalResearch'), roles: ['lawyer'] },
     { href: '/chatbot', icon: MessageSquare, label: t('sidebar.chatbot'), roles: ['user', 'lawyer'] },
     { href: '/summarize', icon: FileText, label: t('sidebar.summarizer'), roles: ['user', 'lawyer'] },
+    { href: '/admin', icon: Shield, label: t('sidebar.admin'), roles: ['admin'] },
+    { href: '/judge', icon: Gavel, label: t('sidebar.judgeDashboard'), roles: ['judge'] },
+    { href: '/judge/file-case', icon: FileText, label: t('sidebar.fileCase'), roles: ['judge'] },
   ];
 
   const visibleNavItems = navItems.filter(item => userProfile && item.roles.includes(userProfile.role));
