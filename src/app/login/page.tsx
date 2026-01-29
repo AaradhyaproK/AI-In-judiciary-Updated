@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import { useAuth } from '@/firebase/provider';
-import { CircleDashed } from 'lucide-react';
+import { CircleDashed, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
 const formSchema = z.object({
@@ -64,7 +64,15 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-muted/40 p-4 relative">
+      <div className="absolute top-4 left-4 md:top-8 md:left-8">
+        <Link href="/">
+          <Button variant="ghost" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex items-center justify-center">

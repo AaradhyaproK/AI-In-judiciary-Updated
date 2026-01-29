@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, User as UserIcon, Megaphone } from "lucide-react"
+import { LogOut, User as UserIcon } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLanguage } from "@/hooks/use-language"
 
@@ -29,7 +29,7 @@ export function UserNav() {
   const handleLogout = async () => {
     if (!auth) return;
     await signOut(auth)
-    router.push("/login")
+    router.push("/")
   }
 
   if (loading) {
@@ -69,10 +69,6 @@ export function UserNav() {
           <DropdownMenuItem onClick={() => router.push('/profile')}>
             <UserIcon className="mr-2 h-4 w-4" />
             <span>{t('userNav.profile')}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push('/pil')}>
-            <Megaphone className="mr-2 h-4 w-4" />
-            <span>{t('sidebar.pil')}</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
