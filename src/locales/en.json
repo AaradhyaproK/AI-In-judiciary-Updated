@@ -3,13 +3,15 @@
     "dashboard": "Dashboard",
     "caseAnalysis": "Case Analysis",
     "myCases": "My Cases",
+    "statistics": "Court Statistics",
     "findLawyer": "Find a Lawyer",
     "chatbot": "Chatbot",
     "summarizer": "Summarizer",
     "legalResearch": "Legal Research",
     "profile": "Profile",
     "pil": "PIL Assistant",
-    "zeroFir": "File Zero FIR"
+    "zeroFir": "File Zero FIR",
+    "rti": "File RTI"
   },
   "userNav": {
     "logOut": "Log out",
