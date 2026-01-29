@@ -13,6 +13,7 @@ import {
   ScrollText,
   User,
   PieChart,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -43,6 +44,7 @@ export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
     { href: '/pil', icon: Megaphone, label: t('sidebar.pil'), roles: ['user', 'lawyer'] },
     { href: '/zero-fir', icon: FileText, label: t('sidebar.zeroFir'), roles: ['user', 'lawyer'] },
     { href: '/rti', icon: ScrollText, label: t('sidebar.rti'), roles: ['user', 'lawyer'] },
+    { href: '/know-your-rights', icon: BookOpen, label: t('sidebar.knowYourRights'), roles: ['user', 'lawyer'] },
     { href: '/lawyers', icon: Users, label: t('sidebar.findLawyer'), roles: ['user'] },
     { href: '/legal-research', icon: ScrollText, label: t('sidebar.legalResearch'), roles: ['lawyer'] },
     { href: '/chatbot', icon: MessageSquare, label: t('sidebar.chatbot'), roles: ['user', 'lawyer'] },
