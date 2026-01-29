@@ -1,0 +1,112 @@
+{
+  "sidebar": {
+    "dashboard": "tableau",
+    "caseAnalysis": "मामले का विश्लेषण",
+    "myCases": "मेरे मामले",
+    "findLawyer": "वकील खोजें",
+    "chatbot": "चैटबॉट",
+    "summarizer": "सारांशक",
+    "legalResearch": "कानूनी अनुसंधान",
+    "profile": "प्रोफ़ाइल"
+  },
+  "userNav": {
+    "logOut": "लॉग आउट",
+    "profile": "प्रोफ़ाइल"
+  },
+  "dashboard": {
+    "welcome": "स्वागत है, {{name}}!",
+    "subheading": "आपका व्यक्तिगत कानूनी सहायक मदद के लिए तैयार है।",
+    "description": "अपने मामले का एआई-संचालित विश्लेषण प्राप्त करके शुरू करें, अपनी आवश्यकताओं के लिए सही वकील खोजें, या अपने चल रहे मामलों का प्रबंधन करें।",
+    "aiAnalysisTitle": "एआई केस विश्लेषण",
+    "aiAnalysisDescription": "संभावित परिणामों और संभावनाओं सहित अपनी कानूनी स्थिति का तुरंत, एआई-संचालित मूल्यांकन प्राप्त करें।",
+    "findLawyerTitle": "वकील खोजें",
+    "findLawyerDescription": "अपने मामले के लिए सही मिलान खोजने के लिए हमारे योग्य कानूनी पेशेवरों के नेटवर्क को ब्राउज़ करें।",
+    "manageCasesTitle": "मेरे मामले प्रबंधित करें",
+    "manageCasesDescription": "अपने चल रहे मामलों की स्थिति को ट्रैक करें, अपने वकील से संवाद करें, और सभी मामले से संबंधित दस्तावेजों तक पहुंचें।",
+    "lawyerWelcome": "स्वागत है, काउंसलर {{name}}!",
+    "lawyerSubheading": "आपका वकील डैशबोर्ड तैयार है।",
+    "lawyerDescription": "अपने सौंपे गए मामलों का प्रबंधन करें, अपने ग्राहकों के साथ चैट करें, और मजबूत तर्क बनाने के लिए कानूनी शोध करें।",
+    "viewCasesTitle": "सौंपे गए मामले देखें",
+    "viewCasesDescription": "अपने सभी सक्रिय और लंबित मामलों तक पहुँचें, और अपने ग्राहकों के साथ संवाद करें।",
+    "legalResearchTitle": "कानूनी अनुसंधान",
+    "legalResearchDescription": "अपने कानूनी तर्कों का समर्थन करने के लिए प्रासंगिक केस कानून और मिसालें खोजें।"
+  },
+  "login": {
+    "welcomeBack": "वापसी पर स्वागत है",
+    "signInMessage": "अपने न्याय मित्र खाते में साइन इन करें",
+    "emailLabel": "ईमेल",
+    "passwordLabel": "पासवर्ड",
+    "signInButton": "साइन इन करें",
+    "noAccount": "खाता नहीं है?",
+    "signUpLink": "साइन अप करें"
+  },
+  "register": {
+    "createAccount": "खाता बनाएं",
+    "joinMessage": "शुरू करने के लिए न्याय मित्र से जुड़ें।",
+    "registerAs": "के रूप में पंजीकरण करें...",
+    "userRole": "उपयोगकर्ता",
+    "lawyerRole": "वकील",
+    "fullNameLabel": "पूरा नाम",
+    "fullNamePlaceholder": "अपना नाम दर्ज करें",
+    "emailLabel": "ईमेल",
+    "passwordLabel": "पासवर्ड",
+    "passwordPlaceholder": "कम से कम 6 अक्षर",
+    "specializationLabel": "विशेषज्ञता",
+    "specializationPlaceholder": "जैसे, कॉर्पोरेट कानून",
+    "experienceLabel": "अनुभव के वर्ष",
+    "signUpButton": "साइन अप करें",
+    "haveAccount": "पहले से ही एक खाता है?",
+    "signInLink": "साइन इन करें",
+    "contactNumberLabel": "संपर्क संख्या",
+    "locationLabel": "ज़िला",
+    "locationPlaceholder": "अपना जिला चुनें",
+    "educationLabel": "शिक्षा",
+    "lawyerTypeLabel": "कानून के प्रकार",
+    "lawyerTypeDescription": "आप जिन कानूनी क्षेत्रों में अभ्यास करते हैं, उनका चयन करें।",
+    "lawyerTypes": {
+      "corporate": "कॉर्पोरेट",
+      "criminal": "अपराधिक",
+      "family": "परिवार",
+      "immigration": "आप्रवासन",
+      "civil": "नागरिक मुकदमा",
+      "ip": "बौद्धिक संपदा"
+    }
+  },
+  "chatbot": {
+    "title": "बहुभाषी कानूनी सहायक",
+    "language": "भाषा",
+    "placeholder": "{{language}} में एक कानूनी प्रश्न पूछें..."
+  },
+  "legalResearch": {
+    "title": "कानूनी अनुसंधान सहायक",
+    "description": "प्रासंगिक कानूनी मिसालों और केस कानून को खोजने के लिए एक मामले का वर्णन करें।",
+    "caseDescriptionLabel": "मामले का विवरण",
+    "caseDescriptionPlaceholder": "मामले का विवरण दर्ज करें, जिसमें तथ्य, कानूनी प्रश्न और अधिकार क्षेत्र शामिल हैं...",
+    "submitButton": "मिसालें खोजें",
+    "loading": "मिसालों की खोज की जा रही है...",
+    "resultsTitle": "अनुसंधान परिणाम",
+    "analysisTitle": "एआई विश्लेषण",
+    "precedentsTitle": "पाई गई मिसालें"
+  },
+  "languageName": "Hindi",
+  "aiJudge": {
+    "title": "एआई-संचालित केस विश्लेषण",
+    "description": "विस्तृत एआई-संचालित विश्लेषण, एक रणनीतिक रोडमैप प्राप्त करने और एक उपयुक्त वकील से जुड़ने के लिए अपने कानूनी मुद्दे का वर्णन करें।",
+    "caseDetailsLabel": "आपका कानूनी मुद्दा",
+    "caseDetailsPlaceholder": "तथ्यों, शामिल पक्षों और आप क्या हासिल करने की उम्मीद कर रहे हैं, इसका यथासंभव विस्तार से वर्णन करें।",
+    "precedentsLabel": "सहायक दस्तावेज़ या मिसालें (वैकल्पिक)",
+    "precedentsPlaceholder": "अनुबंधों, ईमेलों या केस कानूनों से कोई भी प्रासंगिक पाठ चिपकाएँ।",
+    "submitButton": "मेरे मामले का विश्लेषण करें",
+    "loading": "विश्लेषण हो रहा है...",
+    "resultsTitle": "केस विश्लेषण रिपोर्ट",
+    "caseSummary": "केस सारांश",
+    "strengths": "ताकत",
+    "weaknesses": "कमजोरियाँ और जोखिम",
+    "roadmap": "अनुशंसित अगले चरण",
+    "potentialOutcome": "सबसे संभावित परिणाम",
+    "similarCases": "समान केस मिसालें",
+    "disclaimerTitle": "अस्वीकरण",
+    "recommendedLawyers": "अनुशंसित वकील",
+    "recommendedLawyersDescription": "आपके मामले के आधार पर, यहाँ कुछ वकील हैं जो मदद कर सकते हैं।"
+  }
+}
