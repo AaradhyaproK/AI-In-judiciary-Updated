@@ -11,7 +11,7 @@ import { useUser } from '@/firebase/auth/use-user';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Briefcase, FileText, Shield, CheckCircle, AlertCircle, Gavel, Trash2, Check, X, BrainCircuit, Loader2, Plus } from 'lucide-react';
+import { Users, Briefcase, FileText, Shield, CheckCircle, AlertCircle, Gavel, Trash2, Check, X, BrainCircuit, Loader2, Plus, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,19 @@ interface CaseData {
   description?: string;
 }
 
+interface FeedbackData {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  category?: string;
+  subject?: string;
+  message: string;
+  lawyerDetails?: string;
+  createdAt?: any;
+}
+
 export default function AdminPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -54,6 +67,7 @@ export default function AdminPage() {
 
   const { data: users, loading: usersLoading } = useCollection<UserData>('users');
   const { data: cases, loading: casesLoading } = useCollection<CaseData>('cases');
+  const { data: feedbackList, loading: feedbackLoading } = useCollection<FeedbackData>('feedback');
 
   const [analyzingCaseId, setAnalyzingCaseId] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CaseAnalysisOutput | null>(null);
@@ -66,6 +80,7 @@ export default function AdminPage() {
     location: '',
     contactNumber: ''
   });
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackData | null>(null);
 
   useEffect(() => {
     if (!authLoading && !profileLoading) {
@@ -240,6 +255,7 @@ export default function AdminPage() {
           <TabsTrigger value="lawyers">Lawyers Directory</TabsTrigger>
           <TabsTrigger value="judges">Judges Directory</TabsTrigger>
           <TabsTrigger value="users">Users Directory</TabsTrigger>
+          <TabsTrigger value="feedback">Feedback</TabsTrigger>
         </TabsList>
 
         {/* Cases Tab */}
@@ -507,6 +523,85 @@ export default function AdminPage() {
                       {usersList.length === 0 && (
                         <tr>
                           <td colSpan={4} className="p-4 text-center text-muted-foreground">No users found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Feedback Tab */}
+        <TabsContent value="feedback" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>User Feedback</CardTitle>
+              <CardDescription>Feedback submitted from the landing page.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <div className="relative w-full overflow-auto">
+                  <table className="w-full caption-bottom text-sm">
+                    <thead className="[&_tr]:border-b">
+                      <tr className="border-b transition-colors hover:bg-muted/50">
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Category</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Subject</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Date</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="[&_tr:last-child]:border-0">
+                      {feedbackList && feedbackList.length > 0 ? feedbackList.map((f) => (
+                        <tr key={f.id} className="border-b transition-colors hover:bg-muted/50">
+                          <td className="p-4 align-middle font-medium">
+                            <div>{f.name}</div>
+                            <div className="text-xs text-muted-foreground">{f.role || 'User'}</div>
+                          </td>
+                          <td className="p-4 align-middle"><Badge variant="outline">{f.category || 'General'}</Badge></td>
+                          <td className="p-4 align-middle max-w-[200px] truncate" title={f.subject}>{f.subject || 'No Subject'}</td>
+                          <td className="p-4 align-middle">{f.createdAt?.toDate().toLocaleDateString()}</td>
+                          <td className="p-4 align-middle">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => setSelectedFeedback(f)}>
+                                        <Eye className="w-4 h-4 mr-2" /> View
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                        <DialogTitle>Feedback Details</DialogTitle>
+                                        <DialogDescription>Submitted on {f.createdAt?.toDate().toLocaleString()}</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid grid-cols-2 gap-4 py-4">
+                                        <div><Label className="text-muted-foreground">Name</Label><p className="font-medium">{f.name}</p></div>
+                                        <div><Label className="text-muted-foreground">Email</Label><p className="font-medium">{f.email}</p></div>
+                                        <div><Label className="text-muted-foreground">Phone</Label><p className="font-medium">{f.phone || 'N/A'}</p></div>
+                                        <div><Label className="text-muted-foreground">Role</Label><p className="font-medium">{f.role || 'N/A'}</p></div>
+                                        <div><Label className="text-muted-foreground">Category</Label><p className="font-medium">{f.category || 'General'}</p></div>
+                                        <div><Label className="text-muted-foreground">Subject</Label><p className="font-medium">{f.subject || 'N/A'}</p></div>
+                                        
+                                        {f.category === 'Complaint' && f.lawyerDetails && (
+                                            <div className="col-span-2 bg-red-50 p-3 rounded-md border border-red-100">
+                                                <Label className="text-red-600">Complaint Against / Lawyer Details</Label>
+                                                <p className="font-medium text-red-900">{f.lawyerDetails}</p>
+                                            </div>
+                                        )}
+
+                                        <div className="col-span-2 mt-2">
+                                            <Label className="text-muted-foreground">Message</Label>
+                                            <div className="mt-1 p-4 bg-muted rounded-md text-sm leading-relaxed whitespace-pre-wrap">{f.message}</div>
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr>
+                          <td colSpan={4} className="p-4 text-center text-muted-foreground">No feedback found.</td>
                         </tr>
                       )}
                     </tbody>

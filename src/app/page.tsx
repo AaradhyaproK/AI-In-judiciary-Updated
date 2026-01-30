@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,8 +29,123 @@ import {
   Menu,
   BrainCircuit,
   Languages,
-  Accessibility
-} from "lucide-react";
+  Accessibility,
+  TrendingUp,
+  Clock,
+  Quote,
+  X,
+  Send,
+  Loader2,
+  Bell,
+  Check
+} from "lucide-react"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area
+} from 'recharts';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from "@/components/ui/textarea";
+import { useFirestore } from "@/firebase/provider";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
+import { chatWithLandingBot } from '@/ai/flows/landing-chat';
+
+const NATIONAL_DATA = {
+  summary: {
+    civil: 11109034,
+    criminal: 36767155,
+    total: 47876189,
+    preLitigation: 1283564
+  },
+  instituted: { civil: 311392, criminal: 2618266, total: 2929642 },
+  disposal: { civil: 358933, criminal: 3189444, total: 3548377 },
+  purpose: [
+    { name: 'Contested', civil: 71328, criminal: 297503, total: 368831, percentage: '10%' },
+    { name: 'Uncontested', civil: 287605, criminal: 2891941, total: 3179546, percentage: '90%' }
+  ],
+  categories: [
+    { name: 'Listed Today', civil: 419658, criminal: 820139, total: 1239797, note: '3% of Pending' },
+    { name: 'Undated', civil: 304044, criminal: 1328565, total: 1632609, note: '3% of Pending' },
+    { name: 'Excessive Dated', civil: 351858, criminal: 3815034, total: 4166892, note: '9% of Pending' },
+  ],
+  demographics: [
+    { name: 'Women', civil: 1840690, criminal: 2015315, total: 3856005, note: '8% of Pending' },
+    { name: 'Senior Citizens', civil: 2436029, criminal: 757176, total: 3193205, note: '7% of Pending' },
+  ],
+  ageWise: [
+    { range: '0-1 Years', civil: 2500000, criminal: 8000000 },
+    { range: '1-3 Years', civil: 3000000, criminal: 9000000 },
+    { range: '3-5 Years', civil: 2000000, criminal: 7000000 },
+    { range: '5-10 Years', civil: 2000000, criminal: 8000000 },
+    { range: '10-20 Years', civil: 1000000, criminal: 3000000 },
+    { range: '20-30 Years', civil: 500000, criminal: 1000000 },
+    { range: '30+ Years', civil: 109034, criminal: 767155 },
+  ]
+};
+
+const COLORS = {
+  civil: '#3b82f6',
+  criminal: '#ef4444',
+  total: '#10b981',
+  purple: '#8b5cf6',
+  orange: '#f97316',
+  gray: '#9ca3af'
+};
+
+const formatNumber = (num: number) => new Intl.NumberFormat('en-IN').format(num);
+
+const IMPACT_STATS = [
+    { label: "Cases Analyzed", value: "1.2M+" },
+    { label: "Legal Professionals", value: "50k+" },
+    { label: "Citizens Helped", value: "10M+" },
+    { label: "Success Rate", value: "94%" },
+];
+
+const TESTIMONIALS = [
+    {
+        name: "Rajesh Kumar",
+        role: "Citizen",
+        content: "NyayaAI helped me understand my property dispute rights in minutes. The AI analysis was spot on!",
+    },
+    {
+        name: "Adv. Priya Sharma",
+        role: "High Court Lawyer",
+        content: "The legal research tool saves me hours of work. Finding relevant precedents has never been easier.",
+    },
+    {
+        name: "Amit Patel",
+        role: "Small Business Owner",
+        content: "Filing an RTI was daunting until I used this platform. The step-by-step guidance is excellent.",
+    }
+];
+
+const LEGAL_NEWS = [
+    "Supreme Court digitizes 1 crore pages of judicial records for public access.",
+    "New consumer protection rules for e-commerce platforms notified by Ministry.",
+    "National Lok Adalat settles record number of pending cases in a single day.",
+    "Government launches expanded tele-law service for rural areas."
+];
 
 const RIGHTS_DATA_LANDING = [
     {
@@ -75,18 +193,117 @@ const RIGHTS_DATA_LANDING = [
 ];
 
 export default function LandingPage() {
+  const data = NATIONAL_DATA;
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', content: string}[]>([
+      { role: 'model', content: 'Namaste! I am NyayaAI Assistant. Ask me about your rights, our features, or legal statistics.' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+  const [feedbackForm, setFeedbackForm] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '',
+    role: '',
+    category: '',
+    subject: '',
+    message: '',
+    lawyerDetails: ''
+  });
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setCurrentNewsIndex((prev) => (prev + 1) % LEGAL_NEWS.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, isChatOpen]);
+
+  const handleChatSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!chatInput.trim() || isChatLoading) return;
+
+    const userMsg = chatInput;
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setIsChatLoading(true);
+
+    try {
+        const result = await chatWithLandingBot({
+            messages: chatMessages,
+            newMessage: userMsg
+        });
+        setChatMessages(prev => [...prev, { role: 'model', content: result.response }]);
+    } catch (error) {
+        setChatMessages(prev => [...prev, { role: 'model', content: "I apologize, but I'm having trouble connecting to the server right now." }]);
+    } finally {
+        setIsChatLoading(false);
+    }
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore) return;
+    setIsSubmittingFeedback(true);
+    try {
+      await addDoc(collection(firestore, 'feedback'), {
+        ...feedbackForm,
+        createdAt: serverTimestamp(),
+      });
+      setFeedbackForm({ 
+        name: '', 
+        email: '', 
+        phone: '',
+        role: '',
+        category: '',
+        subject: '',
+        message: '',
+        lawyerDetails: ''
+      });
+      toast({ title: "Feedback Submitted", description: "Thank you for your feedback!" });
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to submit feedback. Please try again." });
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 font-sans selection:bg-[#3F51B5] selection:text-white">
+      {/* News Ticker */}
+      <div className="bg-slate-900 text-white text-xs py-2.5 border-b border-slate-800">
+        <div className="container px-4 md:px-6 flex items-center justify-center md:justify-start gap-3">
+            <Badge variant="secondary" className="bg-[#4CAF50] text-white hover:bg-[#43A047] border-none text-[10px] px-2 h-5">LATEST UPDATE</Badge>
+            <div className="flex-1 overflow-hidden relative h-4">
+                <p key={currentNewsIndex} className="animate-in slide-in-from-bottom-2 fade-in duration-500 absolute w-full truncate">
+                    {LEGAL_NEWS[currentNewsIndex]}
+                </p>
+            </div>
+        </div>
+      </div>
+
       {/* Navbar */}
-      <header className="px-6 lg:px-10 h-20 flex items-center border-b bg-white/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
+      <header className="px-6 lg:px-10 h-20 flex items-center border-b bg-white/90 backdrop-blur-xl sticky top-0 z-50 transition-all duration-200 shadow-sm">
         <Link className="flex items-center justify-center group" href="#">
-          <div className="bg-[#3F51B5] p-2 rounded-lg group-hover:rotate-12 transition-transform duration-300">
+          <div className="bg-gradient-to-br from-[#3F51B5] to-[#303F9F] p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-blue-500/20">
              <Scale className="h-6 w-6 text-white" />
           </div>
           <span className="ml-3 text-2xl font-bold text-slate-900 tracking-tight">NyayaAI</span>
         </Link>
         <nav className="ml-auto flex gap-8 hidden lg:flex items-center">
-          {['Features', 'AI Tools', 'Who Can Use', 'Accessibility', 'Know Your Rights'].map((item) => (
+          {['Features', 'AI Tools', 'Statistics', 'Testimonials', 'Know Your Rights'].map((item) => (
             <Link key={item} className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}>
               {item}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#3F51B5] transition-all group-hover:w-full"></span>
@@ -105,17 +322,19 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="w-full py-20 md:py-32 lg:py-40 bg-[#3F51B5] relative overflow-hidden">
+        <section className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-[#3F51B5] via-[#3949AB] to-[#283593] relative overflow-hidden">
              {/* Background elements... */}
              <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
+             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+             <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-400/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3"></div>
              
              <div className="container px-4 md:px-6 relative z-10">
                 <div className="grid gap-12 lg:grid-cols-2 items-center">
-                    <div className="flex flex-col justify-center space-y-8">
+                    <div className="flex flex-col justify-center space-y-8 animate-in slide-in-from-left duration-700 fade-in">
                         <div className="space-y-4">
-                            <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-100 backdrop-blur-sm">
-                                <span className="flex h-2 w-2 rounded-full bg-[#4CAF50] mr-2 animate-pulse"></span>
-                                AI-Powered Legal Assistance
+                            <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md shadow-sm">
+                                <span className="flex h-2.5 w-2.5 rounded-full bg-[#4CAF50] mr-2 animate-pulse shadow-[0_0_10px_#4CAF50]"></span>
+                                AI-Powered Legal Assistance 2.0
                             </div>
                             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl xl:text-7xl leading-tight">
                                 Smart Justice Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-emerald-300">Artificial Intelligence</span>
@@ -126,20 +345,20 @@ export default function LandingPage() {
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link href="/register">
-                                <Button size="lg" className="bg-[#4CAF50] hover:bg-[#43A047] text-white border-none px-8 font-bold text-lg h-14 rounded-full shadow-xl shadow-green-900/20 transition-all hover:scale-105 w-full sm:w-auto">
+                                <Button size="lg" className="bg-[#4CAF50] hover:bg-[#43A047] text-white border-none px-8 font-bold text-lg h-14 rounded-full shadow-xl shadow-green-900/30 transition-all hover:scale-105 hover:shadow-2xl w-full sm:w-auto">
                                     Get Legal Help <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </Link>
                             <Link href="/login">
-                                <Button variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 h-14 rounded-full px-8 font-semibold w-full sm:w-auto">
+                                <Button variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 h-14 rounded-full px-8 font-semibold w-full sm:w-auto hover:border-white/40 transition-all">
                                     Login as User / Lawyer / Judge
                                 </Button>
                             </Link>
                         </div>
                     </div>
                     {/* Hero Graphic */}
-                    <div className="relative flex items-center justify-center">
-                        <div className="relative w-full max-w-[500px] aspect-square bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-in fade-in zoom-in duration-1000 overflow-hidden">
+                    <div className="relative flex items-center justify-center animate-in slide-in-from-right duration-700 fade-in">
+                        <div className="relative w-full max-w-[500px] aspect-square bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-in fade-in zoom-in duration-1000 overflow-hidden hover:scale-[1.02] transition-transform duration-500">
                             <img src="https://rockybhai.lovable.app/assets/hero-illustration-DgrLGejo.png" alt="Hero Illustration" className="w-full h-full object-cover drop-shadow-2xl" />
                             <div className="absolute inset-0 rounded-full border-t-2 border-white/30 animate-[spin_10s_linear_infinite]"></div>
                             <div className="absolute inset-4 rounded-full border-b-2 border-[#4CAF50]/50 animate-[spin_15s_linear_infinite_reverse]"></div>
@@ -147,6 +366,20 @@ export default function LandingPage() {
                     </div>
                 </div>
              </div>
+        </section>
+
+        {/* Impact Stats Banner */}
+        <section className="w-full py-16 bg-white border-b border-slate-100 relative z-20 -mt-8 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+            <div className="container px-4 md:px-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    {IMPACT_STATS.map((stat, index) => (
+                        <div key={index} className="space-y-2 animate-in zoom-in duration-500 delay-100">
+                            <div className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#3F51B5] to-[#303F9F]">{stat.value}</div>
+                            <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{stat.label}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </section>
 
         {/* Features Section */}
@@ -157,15 +390,15 @@ export default function LandingPage() {
                     <p className="text-lg text-slate-600">Access a wide range of AI-powered tools designed to simplify legal processes for citizens, lawyers, and judges.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <FeatureCard icon={<Megaphone />} title="PIL Assistance System" description="Help users file Public Interest Litigations with step-by-step guidance" color="bg-red-500" />
-                    <FeatureCard icon={<ScrollText />} title="RTI System Support" description="Guide citizens in filing RTI applications effectively" color="bg-orange-500" />
-                    <FeatureCard icon={<Gavel />} title="AI as Judge (Research Tool)" description="AI-based legal reasoning & suggestions for complex cases" color="bg-blue-600" />
-                    <FeatureCard icon={<BarChart3 />} title="Court Statistics Dashboard" description="Case data visualization, trends, and analytics" color="bg-purple-500" />
-                    <FeatureCard icon={<Users />} title="Lawyer Recommendation" description="Find lawyers based on case type and expertise" color="bg-indigo-500" />
-                    <FeatureCard icon={<Languages />} title="Multilingual Support" description="Available in Marathi, Hindi, and English" color="bg-green-500" />
-                    <FeatureCard icon={<Mic />} title="Voice-Based Input & Output" description="Speak your legal problem for hands-free access" color="bg-pink-500" />
-                    <FeatureCard icon={<MessageSquare />} title="AI Legal Chatbot" description="Ask legal questions and get instant responses" color="bg-teal-500" />
-                    <FeatureCard icon={<FileText />} title="Document Understanding" description="AI summaries of long legal judgments" color="bg-slate-600" />
+                    <FeatureCard icon={<Megaphone />} title="PIL Assistance System" description="Help users file Public Interest Litigations with step-by-step guidance" color="bg-red-500" delay={0} />
+                    <FeatureCard icon={<ScrollText />} title="RTI System Support" description="Guide citizens in filing RTI applications effectively" color="bg-orange-500" delay={100} />
+                    <FeatureCard icon={<Gavel />} title="AI as Judge (Research Tool)" description="AI-based legal reasoning & suggestions for complex cases" color="bg-blue-600" delay={200} />
+                    <FeatureCard icon={<BarChart3 />} title="Court Statistics Dashboard" description="Case data visualization, trends, and analytics" color="bg-purple-500" delay={300} />
+                    <FeatureCard icon={<Users />} title="Lawyer Recommendation" description="Find lawyers based on case type and expertise" color="bg-indigo-500" delay={400} />
+                    <FeatureCard icon={<Languages />} title="Multilingual Support" description="Available in Marathi, Hindi, and English" color="bg-green-500" delay={500} />
+                    <FeatureCard icon={<Mic />} title="Voice-Based Input & Output" description="Speak your legal problem for hands-free access" color="bg-pink-500" delay={600} />
+                    <FeatureCard icon={<MessageSquare />} title="AI Legal Chatbot" description="Ask legal questions and get instant responses" color="bg-teal-500" delay={700} />
+                    <FeatureCard icon={<FileText />} title="Document Understanding" description="AI summaries of long legal judgments" color="bg-slate-600" delay={800} />
                 </div>
             </div>
         </section>
@@ -178,12 +411,210 @@ export default function LandingPage() {
                     <p className="text-lg text-slate-600">Advanced artificial intelligence capabilities to transform how legal work is done.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <ToolCard icon={<Scale />} title="Judgment Recommendation" description="AI suggests relevant past judgments for your case" />
-                    <ToolCard icon={<Search />} title="Case Fact Extraction" description="Automatically extract key facts from case documents" />
-                    <ToolCard icon={<Calendar />} title="Case Management & Scheduling" description="Organize hearings and track case progress" />
-                    <ToolCard icon={<Unlock />} title="Bail Prediction Assistance" description="AI-assisted bail outcome predictions" />
-                    <ToolCard icon={<GraduationCap />} title="Legal Case Study Helper" description="Learning tool for law students" />
-                    <ToolCard icon={<BookOpen />} title="Know Your Rights" description="Citizen legal awareness and education" />
+                    <ToolCard icon={<Scale />} title="Judgment Recommendation" description="AI suggests relevant past judgments for your case" delay={0} />
+                    <ToolCard icon={<Search />} title="Case Fact Extraction" description="Automatically extract key facts from case documents" delay={100} />
+                    <ToolCard icon={<Calendar />} title="Case Management & Scheduling" description="Organize hearings and track case progress" delay={200} />
+                    <ToolCard icon={<Unlock />} title="Bail Prediction Assistance" description="AI-assisted bail outcome predictions" delay={300} />
+                    <ToolCard icon={<GraduationCap />} title="Legal Case Study Helper" description="Learning tool for law students" delay={400} />
+                    <ToolCard icon={<BookOpen />} title="Know Your Rights" description="Citizen legal awareness and education" delay={500} />
+                </div>
+            </div>
+        </section>
+
+        {/* Statistics Section */}
+        <section id="statistics" className="w-full py-24 bg-slate-50">
+            <div className="container px-4 md:px-6">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Court Statistics Dashboard</h2>
+                    <p className="text-lg text-slate-600">Real-time analysis of judicial data across the country.</p>
+                </div>
+
+                {/* Top Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <SummaryCard 
+                    title="Total Pending Cases" 
+                    value={data.summary.total} 
+                    icon={<Scale className="w-5 h-5 text-white" />} 
+                    color="bg-primary"
+                    subtext="Across all courts"
+                    />
+                    <SummaryCard 
+                    title="Civil Cases" 
+                    value={data.summary.civil} 
+                    icon={<FileText className="w-5 h-5 text-white" />} 
+                    color="bg-blue-500"
+                    subtext={`${((data.summary.civil / data.summary.total) * 100).toFixed(1)}% of Total`}
+                    />
+                    <SummaryCard 
+                    title="Criminal Cases" 
+                    value={data.summary.criminal} 
+                    icon={<Gavel className="w-5 h-5 text-white" />} 
+                    color="bg-red-500"
+                    subtext={`${((data.summary.criminal / data.summary.total) * 100).toFixed(1)}% of Total`}
+                    />
+                    <SummaryCard 
+                    title="Pre-Litigation Cases" 
+                    value={data.summary.preLitigation} 
+                    icon={<Clock className="w-5 h-5 text-white" />} 
+                    color="bg-orange-500"
+                    subtext="Pre-Trial Stage"
+                    />
+                </div>
+
+                {/* Main Charts Section */}
+                <Tabs defaultValue="overview" className="space-y-4">
+                    <TabsList className="flex flex-wrap h-auto justify-start gap-2 bg-transparent p-0">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="demographics">Demographics</TabsTrigger>
+                    <TabsTrigger value="pendency">Pendency Analysis</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="overview" className="space-y-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5" /> Case Flow (Last Month)</CardTitle>
+                            <CardDescription>Comparison of cases instituted vs disposed</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[300px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[
+                                { name: 'Instituted', civil: data.instituted.civil, criminal: data.instituted.criminal },
+                                { name: 'Disposed', civil: data.disposal.civil, criminal: data.disposal.criminal },
+                            ]}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                                <YAxis tickFormatter={(value) => `${(value / 100000).toFixed(1)}L`} />
+                                <Tooltip formatter={(value: number) => formatNumber(value)} />
+                                <Legend />
+                                <Bar dataKey="civil" name="Civil" fill={COLORS.civil} radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="criminal" name="Criminal" fill={COLORS.criminal} radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                        </Card>
+
+                        <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Gavel className="w-5 h-5" /> Disposal Nature</CardTitle>
+                            <CardDescription>Breakdown of contested vs uncontested disposals</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[300px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                data={data.purpose}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={100}
+                                paddingAngle={5}
+                                dataKey="total"
+                                >
+                                {data.purpose.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={index === 0 ? COLORS.orange : COLORS.total} />
+                                ))}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => formatNumber(value)} />
+                                <Legend />
+                            </PieChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                        </Card>
+                    </div>
+                    </TabsContent>
+
+                    <TabsContent value="demographics" className="space-y-4">
+                        {/* Demographics content would go here, simplified for brevity */}
+                        <div className="p-8 text-center text-muted-foreground border rounded-lg bg-white">
+                            Detailed demographic breakdown available in the full dashboard.
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="pendency" className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                            <CardTitle>Age-wise Pendency</CardTitle>
+                            <CardDescription>Distribution of cases based on duration pending</CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-[400px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={data.ageWise}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="range" tick={{ fontSize: 12 }} />
+                                <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
+                                <Tooltip formatter={(value: number) => formatNumber(value)} />
+                                <Legend />
+                                <Area type="monotone" dataKey="civil" name="Civil Cases" stackId="1" stroke={COLORS.civil} fill={COLORS.civil} />
+                                <Area type="monotone" dataKey="criminal" name="Criminal Cases" stackId="1" stroke={COLORS.criminal} fill={COLORS.criminal} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section id="testimonials" className="w-full py-24 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-5">
+                <div className="absolute top-10 left-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-500 rounded-full blur-3xl"></div>
+             </div>
+             <div className="container px-4 md:px-6 relative z-10">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Trusted by Thousands</h2>
+                    <p className="text-lg text-slate-600">See what citizens and legal professionals are saying about NyayaAI.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {TESTIMONIALS.map((testimonial, i) => (
+                        <Card key={i} className="bg-white border border-slate-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group">
+                            <CardContent className="pt-6">
+                                <Quote className="w-10 h-10 text-[#3F51B5]/20 mb-4" />
+                                <p className="text-slate-600 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3F51B5] to-blue-600 flex items-center justify-center text-white font-bold text-sm">{testimonial.name.charAt(0)}</div>
+                                    <div>
+                                        <div className="font-bold text-slate-900">{testimonial.name}</div>
+                                        <div className="text-xs text-slate-500">{testimonial.role}</div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+             </div>
+        </section>
+
+        {/* Why Choose Us Section (New) */}
+        <section className="w-full py-24 bg-[#3F51B5] text-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+            <div className="container px-4 md:px-6 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    <div className="space-y-6">
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Why Choose NyayaAI?</h2>
+                        <p className="text-blue-100 text-lg leading-relaxed">
+                            We combine cutting-edge technology with deep legal expertise to provide a platform that is secure, accurate, and easy to use.
+                        </p>
+                        <ul className="space-y-4">
+                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>94% Accuracy in Case Predictions</span></li>
+                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>Secure & Confidential Data Handling</span></li>
+                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>24/7 Availability in 3+ Languages</span></li>
+                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>Verified Network of 50k+ Lawyers</span></li>
+                        </ul>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-2xl opacity-30"></div>
+                        <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white/10 p-4 rounded-xl text-center"><div className="text-3xl font-bold mb-1">24/7</div><div className="text-xs text-blue-200">Support</div></div>
+                                <div className="bg-white/10 p-4 rounded-xl text-center"><div className="text-3xl font-bold mb-1">100%</div><div className="text-xs text-blue-200">Secure</div></div>
+                                <div className="bg-white/10 p-4 rounded-xl text-center"><div className="text-3xl font-bold mb-1">AI</div><div className="text-xs text-blue-200">Powered</div></div>
+                                <div className="bg-white/10 p-4 rounded-xl text-center"><div className="text-3xl font-bold mb-1">Free</div><div className="text-xs text-blue-200">Basic Access</div></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -227,7 +658,7 @@ export default function LandingPage() {
 
         {/* Accessibility Section */}
         <section id="accessibility" className="w-full py-24 bg-[#3F51B5] text-white overflow-hidden relative">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#283593] to-[#1A237E]"></div>
             <div className="container px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     <div>
@@ -294,7 +725,7 @@ export default function LandingPage() {
         {/* CTA Section */}
         <section className="w-full py-24 bg-white">
           <div className="container px-4 md:px-6">
-            <div className="bg-slate-900 rounded-[2.5rem] p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 md:p-16 text-center relative overflow-hidden shadow-2xl border border-slate-700">
                 {/* Decorative circles */}
                 <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
                 <div className="absolute bottom-0 right-0 w-64 h-64 bg-green-500/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
@@ -306,12 +737,12 @@ export default function LandingPage() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href="/register">
-                            <Button size="lg" className="bg-[#4CAF50] hover:bg-[#43A047] text-white px-8 h-14 rounded-full text-lg font-semibold w-full sm:w-auto shadow-lg shadow-green-900/20">
+                            <Button size="lg" className="bg-[#4CAF50] hover:bg-[#43A047] text-white px-8 h-14 rounded-full text-lg font-semibold w-full sm:w-auto shadow-lg shadow-green-900/30 hover:shadow-green-900/50 transition-all hover:scale-105">
                                 Start Free Legal Guidance
                             </Button>
                         </Link>
                         <Link href="#ai-tools">
-                            <Button variant="outline" size="lg" className="bg-transparent border-slate-600 text-white hover:bg-white/10 px-8 h-14 rounded-full text-lg font-semibold w-full sm:w-auto">
+                            <Button variant="outline" size="lg" className="bg-transparent border-slate-600 text-white hover:bg-white/10 px-8 h-14 rounded-full text-lg font-semibold w-full sm:w-auto hover:border-white/50 transition-all">
                                 Explore AI Tools
                             </Button>
                         </Link>
@@ -321,6 +752,89 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+
+      {/* Feedback Section */}
+      <section id="feedback" className="w-full py-24 bg-slate-50 border-t border-slate-200">
+          <div className="container px-4 md:px-6">
+            <div className="max-w-2xl mx-auto text-center mb-12">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">We Value Your Feedback</h2>
+              <p className="text-lg text-slate-600 mt-4">Help us improve NyayaAI by sharing your thoughts and suggestions.</p>
+            </div>
+            <Card className="max-w-3xl mx-auto shadow-lg border-t-4 border-t-[#3F51B5]">
+              <CardContent className="p-8">
+                <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm font-medium text-slate-700">Name</label>
+                      <Input id="name" placeholder="Your Full Name" value={feedbackForm.name} onChange={(e) => setFeedbackForm({...feedbackForm, name: e.target.value})} required className="bg-slate-50" />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>
+                      <Input id="email" type="email" placeholder="your@email.com" value={feedbackForm.email} onChange={(e) => setFeedbackForm({...feedbackForm, email: e.target.value})} required className="bg-slate-50" />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="phone" className="text-sm font-medium text-slate-700">Phone Number</label>
+                      <Input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" value={feedbackForm.phone} onChange={(e) => setFeedbackForm({...feedbackForm, phone: e.target.value})} className="bg-slate-50" />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="role" className="text-sm font-medium text-slate-700">I am a...</label>
+                      <Select value={feedbackForm.role} onValueChange={(val) => setFeedbackForm({...feedbackForm, role: val})}>
+                        <SelectTrigger className="bg-slate-50">
+                          <SelectValue placeholder="Select Role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Citizen">Citizen</SelectItem>
+                          <SelectItem value="Lawyer">Lawyer</SelectItem>
+                          <SelectItem value="Judge">Judge</SelectItem>
+                          <SelectItem value="Student">Law Student</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="category" className="text-sm font-medium text-slate-700">Feedback Category</label>
+                    <Select value={feedbackForm.category} onValueChange={(val) => setFeedbackForm({...feedbackForm, category: val})}>
+                        <SelectTrigger className="bg-slate-50">
+                          <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="General">General Feedback</SelectItem>
+                          <SelectItem value="Complaint">Complaint against Lawyer/Service</SelectItem>
+                          <SelectItem value="Bug">Report a Bug</SelectItem>
+                          <SelectItem value="Feature">Feature Request</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                  </div>
+
+                  {feedbackForm.category === 'Complaint' && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                      <label htmlFor="lawyerDetails" className="text-sm font-medium text-slate-700">Lawyer Name / Contact (if applicable)</label>
+                      <Input id="lawyerDetails" placeholder="Name or details of the lawyer being reported" value={feedbackForm.lawyerDetails} onChange={(e) => setFeedbackForm({...feedbackForm, lawyerDetails: e.target.value})} className="bg-slate-50 border-red-200 focus-visible:ring-red-500" />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label htmlFor="subject" className="text-sm font-medium text-slate-700">Subject</label>
+                    <Input id="subject" placeholder="Brief subject of your feedback" value={feedbackForm.subject} onChange={(e) => setFeedbackForm({...feedbackForm, subject: e.target.value})} required className="bg-slate-50" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="message" className="text-sm font-medium text-slate-700">Detailed Message</label>
+                    <Textarea id="message" placeholder="Please provide detailed information..." rows={5} value={feedbackForm.message} onChange={(e) => setFeedbackForm({...feedbackForm, message: e.target.value})} required className="bg-slate-50 resize-none" />
+                  </div>
+
+                  <Button type="submit" className="w-full bg-[#3F51B5] hover:bg-[#303F9F] h-11 text-base" disabled={isSubmittingFeedback}>
+                    {isSubmittingFeedback ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                    Submit Feedback
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+      </section>
 
       <footer className="bg-slate-50 border-t border-slate-200 pt-16 pb-8">
         <div className="container px-4 md:px-6">
@@ -363,7 +877,7 @@ export default function LandingPage() {
                         <li>support@nyayaai.gov.in</li>
                         <li>1800-XXX-XXXX (Toll Free)</li>
                         <li>Ministry of Law & Justice, New Delhi</li>
-                        <li><Link href="#" className="text-[#3F51B5] font-medium hover:underline">Submit Feedback →</Link></li>
+                        <li><Link href="#feedback" className="text-[#3F51B5] font-medium hover:underline">Submit Feedback →</Link></li>
                     </ul>
                 </div>
             </div>
@@ -377,14 +891,68 @@ export default function LandingPage() {
             </div>
         </div>
       </footer>
+
+      {/* Floating Chatbot */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        {isChatOpen && (
+            <Card className="w-[350px] md:w-[400px] h-[500px] shadow-2xl border-slate-200 mb-4 flex flex-col animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <CardHeader className="bg-[#3F51B5] text-white p-4 rounded-t-xl flex flex-row items-center justify-between space-y-0">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-white/20 p-1.5 rounded-full">
+                            <BrainCircuit className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-base">NyayaAI Assistant</CardTitle>
+                            <CardDescription className="text-blue-200 text-xs">Powered by GenAI • Developed by Aaradhya</CardDescription>
+                        </div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 h-8 w-8" onClick={() => setIsChatOpen(false)}>
+                        <X className="w-5 h-5" />
+                    </Button>
+                </CardHeader>
+                <CardContent className="flex-1 p-0 flex flex-col overflow-hidden bg-slate-50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatScrollRef}>
+                        {chatMessages.map((msg, i) => (
+                            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${msg.role === 'user' ? 'bg-[#3F51B5] text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none shadow-sm'}`}>
+                                    {msg.content}
+                                </div>
+                            </div>
+                        ))}
+                        {isChatLoading && (
+                            <div className="flex justify-start">
+                                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-2 shadow-sm flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin text-[#3F51B5]" />
+                                    <span className="text-xs text-slate-500">Thinking...</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <form onSubmit={handleChatSubmit} className="p-3 bg-white border-t border-slate-200 flex gap-2">
+                        <Input value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Ask about rights, laws..." className="flex-1" disabled={isChatLoading} />
+                        <Button type="submit" size="icon" className="bg-[#3F51B5] hover:bg-[#303F9F]" disabled={!chatInput.trim() || isChatLoading}>
+                            <Send className="w-4 h-4" />
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+        )}
+        <Button 
+            size="lg" 
+            className="h-14 w-14 rounded-full bg-[#3F51B5] hover:bg-[#303F9F] shadow-xl shadow-blue-900/20 transition-transform hover:scale-110"
+            onClick={() => setIsChatOpen(!isChatOpen)}
+        >
+            {isChatOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        </Button>
+      </div>
     </div>
   )
 }
 
-function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: string }) {
+function FeatureCard({ icon, title, description, color, delay }: { icon: React.ReactNode, title: string, description: string, color: string, delay?: number }) {
     return (
-        <div className="flex flex-col items-start space-y-3 border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 bg-white group">
-            <div className={`p-3 rounded-lg ${color} text-white shadow-md group-hover:scale-110 transition-transform`}>
+        <div className="flex flex-col items-start space-y-3 border rounded-xl p-6 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white group cursor-default border-t-4 border-transparent hover:border-[#3F51B5]" style={{ animationDelay: `${delay}ms` }}>
+            <div className={`p-3 rounded-lg ${color} text-white shadow-md group-hover:scale-110 transition-transform duration-300`}>
                 {icon}
             </div>
             <h3 className="text-xl font-bold text-slate-800">{title}</h3>
@@ -395,9 +963,28 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
     )
 }
 
+function SummaryCard({ title, value, icon, color, subtext }: { title: string, value: number, icon: React.ReactNode, color: string, subtext: string }) {
+  return (
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      <CardContent className="p-0">
+        <div className="flex items-stretch">
+          <div className={`${color} w-16 md:w-24 flex items-center justify-center shrink-0`}>
+            {icon}
+          </div>
+          <div className="p-4 flex-1 min-w-0">
+            <p className="text-sm font-medium text-muted-foreground truncate" title={title}>{title}</p>
+            <h3 className="text-xl md:text-2xl font-bold mt-1 truncate">{formatNumber(value)}</h3>
+            <p className="text-xs text-muted-foreground mt-1">{subtext}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function RightCard({ title, description, category, article }: { title: string, description: string, category: string, article: string }) {
     return (
-        <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
+        <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer border-l-4 border-l-transparent hover:border-l-[#3F51B5]">
             <div className="flex justify-between items-start mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-white bg-[#3F51B5] px-3 py-1 rounded-full">{category}</span>
                 <span className="text-xs font-mono text-slate-400">{article}</span>
@@ -408,10 +995,10 @@ function RightCard({ title, description, category, article }: { title: string, d
     )
 }
 
-function ToolCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function ToolCard({ icon, title, description, delay }: { icon: React.ReactNode, title: string, description: string, delay?: number }) {
     return (
-        <div className="flex items-start gap-4 p-6 bg-white rounded-xl border border-slate-200 hover:border-[#3F51B5] transition-colors shadow-sm">
-            <div className="p-2 bg-blue-50 text-[#3F51B5] rounded-lg shrink-0">
+        <div className="flex items-start gap-4 p-6 bg-white rounded-xl border border-slate-200 hover:border-[#3F51B5] hover:shadow-xl transition-all duration-300 shadow-sm group cursor-pointer hover:-translate-y-1" style={{ animationDelay: `${delay}ms` }}>
+            <div className="p-2 bg-blue-50 text-[#3F51B5] rounded-lg shrink-0 group-hover:bg-[#3F51B5] group-hover:text-white transition-colors">
                 {icon}
             </div>
             <div>
@@ -424,8 +1011,8 @@ function ToolCard({ icon, title, description }: { icon: React.ReactNode, title: 
 
 function PersonaCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
-        <div className="text-center flex flex-col items-center p-8 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-xl transition-all border border-slate-100">
-            <div className="w-16 h-16 bg-[#3F51B5] text-white rounded-full flex items-center justify-center mb-6 shadow-lg">
+        <div className="text-center flex flex-col items-center p-8 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-slate-100 group cursor-default">
+            <div className="w-16 h-16 bg-[#3F51B5] text-white rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                 {icon}
             </div>
             <h3 className="text-2xl font-bold text-slate-900 mb-3">{title}</h3>
