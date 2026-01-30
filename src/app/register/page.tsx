@@ -76,13 +76,16 @@ export default function RegisterPage() {
   const { language } = useLanguage();
   const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
+  const registerT = t.register || TRANSLATIONS.en.register;
+  const lawyerTypesT = registerT.lawyerTypes || TRANSLATIONS.en.register.lawyerTypes;
+
   const lawyerTypes = [
-    { id: "corporate", label: t.register.lawyerTypes.corporate },
-    { id: "criminal", label: t.register.lawyerTypes.criminal },
-    { id: "family", label: t.register.lawyerTypes.family },
-    { id: "immigration", label: t.register.lawyerTypes.immigration },
-    { id: "civil", label: t.register.lawyerTypes.civil },
-    { id: "ip", label: t.register.lawyerTypes.ip },
+    { id: "corporate", label: lawyerTypesT.corporate },
+    { id: "criminal", label: lawyerTypesT.criminal },
+    { id: "family", label: lawyerTypesT.family },
+    { id: "immigration", label: lawyerTypesT.immigration },
+    { id: "civil", label: lawyerTypesT.civil },
+    { id: "ip", label: lawyerTypesT.ip },
   ];
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -181,8 +184,8 @@ export default function RegisterPage() {
           <div className="mx-auto mb-4 flex items-center justify-center">
             <Icons.logo className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="font-headline text-3xl">{t.register.createAccount ?? 'Create an account'}</CardTitle>
-          <CardDescription>{t.register.joinMessage ?? 'Enter your email below to create your account'}</CardDescription>
+          <CardTitle className="font-headline text-3xl">{registerT.createAccount ?? 'Create an account'}</CardTitle>
+          <CardDescription>{registerT.joinMessage ?? 'Enter your email below to create your account'}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -202,13 +205,13 @@ export default function RegisterPage() {
                           <FormControl>
                             <RadioGroupItem value="user" id="user" />
                           </FormControl>
-                          <Label htmlFor="user" className="font-normal">{t('register.userRole')}</Label>
+                          <Label htmlFor="user" className="font-normal">{registerT.userRole}</Label>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="lawyer" id="lawyer" />
                           </FormControl>
-                          <Label htmlFor="lawyer" className="font-normal">{t('register.lawyerRole')}</Label>
+                          <Label htmlFor="lawyer" className="font-normal">{registerT.lawyerRole}</Label>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -222,9 +225,9 @@ export default function RegisterPage() {
                 name="displayName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.fullNameLabel')}</FormLabel>
+                    <FormLabel>{registerT.fullNameLabel}</FormLabel>
                     <FormControl>
-                      <Input placeholder={t('register.fullNamePlaceholder')} {...field} />
+                      <Input placeholder={registerT.fullNamePlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -235,7 +238,7 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.emailLabel')}</FormLabel>
+                    <FormLabel>{registerT.emailLabel}</FormLabel>
                     <FormControl>
                       <Input placeholder="name@example.com" {...field} />
                     </FormControl>
@@ -248,9 +251,9 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.passwordLabel')}</FormLabel>
+                    <FormLabel>{registerT.passwordLabel}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder={t('register.passwordPlaceholder')} {...field} />
+                      <Input type="password" placeholder={registerT.passwordPlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -261,7 +264,7 @@ export default function RegisterPage() {
                 name="contactNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.contactNumberLabel')}</FormLabel>
+                    <FormLabel>{registerT.contactNumberLabel}</FormLabel>
                     <FormControl>
                       <Input placeholder="+1 234 567 890" {...field} value={field.value ?? ''}/>
                     </FormControl>
@@ -274,11 +277,11 @@ export default function RegisterPage() {
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.locationLabel')}</FormLabel>
+                    <FormLabel>{registerT.locationLabel}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={t('register.locationPlaceholder')} />
+                          <SelectValue placeholder={registerT.locationPlaceholder} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -301,9 +304,9 @@ export default function RegisterPage() {
                     name="specialization"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('register.specializationLabel')}</FormLabel>
+                        <FormLabel>{registerT.specializationLabel}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t('register.specializationPlaceholder')} {...field} value={field.value ?? ''} />
+                          <Input placeholder={registerT.specializationPlaceholder} {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -314,7 +317,7 @@ export default function RegisterPage() {
                     name="experience"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('register.experienceLabel')}</FormLabel>
+                        <FormLabel>{registerT.experienceLabel}</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? 0} />
                         </FormControl>
@@ -327,7 +330,7 @@ export default function RegisterPage() {
                     name="education"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('register.educationLabel')}</FormLabel>
+                        <FormLabel>{registerT.educationLabel}</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., J.D. from Harvard Law" {...field} value={field.value ?? ''} />
                         </FormControl>
@@ -341,9 +344,9 @@ export default function RegisterPage() {
                     render={() => (
                       <FormItem>
                         <div className="mb-4">
-                          <FormLabel>{t('register.lawyerTypeLabel')}</FormLabel>
+                          <FormLabel>{registerT.lawyerTypeLabel}</FormLabel>
                           <FormDescription>
-                            {t('register.lawyerTypeDescription')}
+                            {registerT.lawyerTypeDescription}
                           </FormDescription>
                         </div>
                         <div className='grid grid-cols-2 gap-4'>
@@ -390,14 +393,14 @@ export default function RegisterPage() {
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <CircleDashed className="mr-2 h-4 w-4 animate-spin" />}
-                {t('register.signUpButton')}
+                {registerT.signUpButton}
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            {t('register.haveAccount')}{' '}
+            {registerT.haveAccount}{' '}
             <Link href="/login" className="underline hover:text-primary">
-              {t('register.signInLink')}
+              {registerT.signInLink}
             </Link>
           </div>
         </CardContent>
