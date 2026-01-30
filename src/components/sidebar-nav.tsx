@@ -15,6 +15,7 @@ import {
   PieChart,
   BookOpen,
   Shield,
+  Unlock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -44,6 +45,7 @@ export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
     { href: '/my-cases', icon: Briefcase, label: t('sidebar.myCases'), roles: ['user', 'lawyer'] },
     { href: '/pil', icon: Megaphone, label: t('sidebar.pil'), roles: ['user', 'lawyer'] },
     { href: '/zero-fir', icon: FileText, label: t('sidebar.zeroFir'), roles: ['user', 'lawyer'] },
+    { href: '/bail-prediction', icon: Unlock, label: t('sidebar.bailPrediction'), roles: ['user', 'lawyer'] },
     { href: '/rti', icon: ScrollText, label: t('sidebar.rti'), roles: ['user', 'lawyer'] },
     { href: '/know-your-rights', icon: BookOpen, label: t('sidebar.knowYourRights'), roles: ['user', 'lawyer'] },
     { href: '/lawyers', icon: Users, label: t('sidebar.findLawyer'), roles: ['user'] },

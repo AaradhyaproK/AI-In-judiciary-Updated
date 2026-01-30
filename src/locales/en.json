@@ -12,6 +12,7 @@
     "pil": "PIL Assistant",
     "zeroFir": "File Zero FIR",
     "rti": "File RTI",
+    "bailPrediction": "Bail Predictor",
     "knowYourRights": "Know Your Rights",
     "admin": "Admin Dashboard",
     "judgeDashboard": "Judge Dashboard",
@@ -517,6 +518,23 @@
       "verdictDelivered": "Verdict Delivered",
       "verdictDeliveredDesc": "The case has been closed with the final verdict.",
       "verdictFailed": "Failed to deliver verdict."
+    }
+  },
+  "bailPrediction": {
+    "title": "Lex-Neural Bail Decision System",
+    "subtitle": "Evidence-Based Legal Decision Support System",
+    "description": "This system uses feature extraction and standard-of-proof logic to predict bail outcomes. It distinguishes between claims and evidence.",
+    "inputLabel": "Case Facts / Legal Arguments",
+    "inputPlaceholder": "Ex: The plaintiff and defendant signed a Contract on 12th Jan 2023. The defendant failed to pay $5000 as per Section 4 of the agreement...",
+    "analyzeBtn": "Adjudicate Case",
+    "analyzing": "Adjudicating...",
+    "results": {
+      "decisionTitle": "HiLPE: Decision & Confidence",
+      "evidenceTitle": "OSGA: Evidence Sensitivity Map",
+      "rationaleTitle": "🧠 AI Analysis & Rationale",
+      "entityTitle": "CLR-Graph: Entity Logic",
+      "jurisprudenceTitle": "AJCL: Jurisprudential Analysis",
+      "verdictTitle": "🏛️ Final Verdict"
     }
   },
   "nav": {
