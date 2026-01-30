@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -32,42 +33,7 @@ import {
   Users, 
   TrendingUp
 } from 'lucide-react';
-
-// --- Data Constants (Based on User Input) ---
-
-const NATIONAL_DATA = {
-  summary: {
-    civil: 11109034,
-    criminal: 36767155,
-    total: 47876189,
-    preLitigation: 1283564
-  },
-  instituted: { civil: 311392, criminal: 2618266, total: 2929642 },
-  disposal: { civil: 358933, criminal: 3189444, total: 3548377 },
-  purpose: [
-    { name: 'Contested', civil: 71328, criminal: 297503, total: 368831, percentage: '10%' },
-    { name: 'Uncontested', civil: 287605, criminal: 2891941, total: 3179546, percentage: '90%' }
-  ],
-  categories: [
-    { name: 'Listed Today', civil: 419658, criminal: 820139, total: 1239797, note: '3% of Pending' },
-    { name: 'Undated', civil: 304044, criminal: 1328565, total: 1632609, note: '3% of Pending' },
-    { name: 'Excessive Dated', civil: 351858, criminal: 3815034, total: 4166892, note: '9% of Pending' },
-  ],
-  demographics: [
-    { name: 'Women', civil: 1840690, criminal: 2015315, total: 3856005, note: '8% of Pending' },
-    { name: 'Senior Citizens', civil: 2436029, criminal: 757176, total: 3193205, note: '7% of Pending' },
-  ],
-  // Simulated Age Wise Data (Derived from typical distributions)
-  ageWise: [
-    { range: '0-1 Years', civil: 2500000, criminal: 8000000 },
-    { range: '1-3 Years', civil: 3000000, criminal: 9000000 },
-    { range: '3-5 Years', civil: 2000000, criminal: 7000000 },
-    { range: '5-10 Years', civil: 2000000, criminal: 8000000 },
-    { range: '10-20 Years', civil: 1000000, criminal: 3000000 },
-    { range: '20-30 Years', civil: 500000, criminal: 1000000 },
-    { range: '30+ Years', civil: 109034, criminal: 767155 },
-  ]
-};
+import { useLanguage } from '@/hooks/use-language';
 
 const COLORS = {
   civil: '#3b82f6', // blue-500
@@ -81,56 +47,89 @@ const COLORS = {
 const formatNumber = (num: number) => new Intl.NumberFormat('en-IN').format(num);
 
 export default function CourtStatisticsPage() {
-  const data = NATIONAL_DATA;
+  const { t } = useLanguage();
+
+  const data = useMemo(() => ({
+    summary: {
+      civil: 11109034,
+      criminal: 36767155,
+      total: 47876189,
+      preLitigation: 1283564
+    },
+    instituted: { civil: 311392, criminal: 2618266, total: 2929642 },
+    disposal: { civil: 358933, criminal: 3189444, total: 3548377 },
+    purpose: [
+      { name: t('statisticsPage.labels.contested'), civil: 71328, criminal: 297503, total: 368831, percentage: '10%' },
+      { name: t('statisticsPage.labels.uncontested'), civil: 287605, criminal: 2891941, total: 3179546, percentage: '90%' }
+    ],
+    categories: [
+      { name: t('statisticsPage.labels.listedToday'), civil: 419658, criminal: 820139, total: 1239797, note: `3% ${t('statisticsPage.summary.ofTotal')}` },
+      { name: t('statisticsPage.labels.undated'), civil: 304044, criminal: 1328565, total: 1632609, note: `3% ${t('statisticsPage.summary.ofTotal')}` },
+      { name: t('statisticsPage.labels.excessiveDated'), civil: 351858, criminal: 3815034, total: 4166892, note: `9% ${t('statisticsPage.summary.ofTotal')}` },
+    ],
+    demographics: [
+      { name: t('statisticsPage.labels.women'), civil: 1840690, criminal: 2015315, total: 3856005, note: `8% ${t('statisticsPage.summary.ofTotal')}` },
+      { name: t('statisticsPage.labels.seniorCitizens'), civil: 2436029, criminal: 757176, total: 3193205, note: `7% ${t('statisticsPage.summary.ofTotal')}` },
+    ],
+    ageWise: [
+      { range: '0-1 Years', civil: 2500000, criminal: 8000000 },
+      { range: '1-3 Years', civil: 3000000, criminal: 9000000 },
+      { range: '3-5 Years', civil: 2000000, criminal: 7000000 },
+      { range: '5-10 Years', civil: 2000000, criminal: 8000000 },
+      { range: '10-20 Years', civil: 1000000, criminal: 3000000 },
+      { range: '20-30 Years', civil: 500000, criminal: 1000000 },
+      { range: '30+ Years', civil: 109034, criminal: 767155 },
+    ]
+  }), [t]);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-0 pb-12">
       {/* Header & Filters */}
       <div className="flex flex-col gap-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Court Statistics Dashboard</h1>
-          <p className="text-muted-foreground">Real-time analysis of judicial data across the country.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">{t('statisticsPage.title')}</h1>
+          <p className="text-muted-foreground">{t('statisticsPage.description')}</p>
         </div>
       </div>
 
       {/* Top Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard 
-          title="Total Pending Cases" 
+          title={t('statistics.cards.pending')} 
           value={data.summary.total} 
           icon={<Scale className="w-5 h-5 text-white" />} 
           color="bg-primary"
-          subtext="Across all courts"
+          subtext={t('statisticsPage.summary.acrossCourts')}
         />
         <SummaryCard 
-          title="Civil Cases" 
+          title={t('statistics.cards.civil')} 
           value={data.summary.civil} 
           icon={<FileText className="w-5 h-5 text-white" />} 
           color="bg-blue-500"
-          subtext={`${((data.summary.civil / data.summary.total) * 100).toFixed(1)}% of Total`}
+          subtext={`${((data.summary.civil / data.summary.total) * 100).toFixed(1)}${t('statisticsPage.summary.ofTotal')}`}
         />
         <SummaryCard 
-          title="Criminal Cases" 
+          title={t('statistics.cards.criminal')} 
           value={data.summary.criminal} 
           icon={<Gavel className="w-5 h-5 text-white" />} 
           color="bg-red-500"
-          subtext={`${((data.summary.criminal / data.summary.total) * 100).toFixed(1)}% of Total`}
+          subtext={`${((data.summary.criminal / data.summary.total) * 100).toFixed(1)}${t('statisticsPage.summary.ofTotal')}`}
         />
         <SummaryCard 
-          title="Pre-Litigation Cases" 
+          title={t('statistics.cards.preLitigation')} 
           value={data.summary.preLitigation} 
           icon={<Clock className="w-5 h-5 text-white" />} 
           color="bg-orange-500"
-          subtext="Pre-Trial Stage"
+          subtext={t('statisticsPage.summary.preTrial')}
         />
       </div>
 
       {/* Main Charts Section */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="flex flex-wrap h-auto justify-start gap-2 bg-transparent p-0">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="demographics">Demographics</TabsTrigger>
-          <TabsTrigger value="pendency">Pendency Analysis</TabsTrigger>
+          <TabsTrigger value="overview">{t('statisticsPage.tabs.overview')}</TabsTrigger>
+          <TabsTrigger value="demographics">{t('statisticsPage.tabs.demographics')}</TabsTrigger>
+          <TabsTrigger value="pendency">{t('statisticsPage.tabs.pendency')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -138,22 +137,22 @@ export default function CourtStatisticsPage() {
             {/* Instituted vs Disposal */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5" /> Case Flow (Last Month)</CardTitle>
-                <CardDescription>Comparison of cases instituted vs disposed</CardDescription>
+                <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5" /> {t('statisticsPage.charts.caseFlow')}</CardTitle>
+                <CardDescription>{t('statisticsPage.charts.caseFlowDesc')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={[
-                    { name: 'Instituted', civil: data.instituted.civil, criminal: data.instituted.criminal },
-                    { name: 'Disposed', civil: data.disposal.civil, criminal: data.disposal.criminal },
+                    { name: t('statisticsPage.labels.instituted'), civil: data.instituted.civil, criminal: data.instituted.criminal },
+                    { name: t('statisticsPage.labels.disposed'), civil: data.disposal.civil, criminal: data.disposal.criminal },
                   ]}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                     <YAxis tickFormatter={(value) => `${(value / 100000).toFixed(1)}L`} />
                     <Tooltip formatter={(value: number) => formatNumber(value)} />
                     <Legend />
-                    <Bar dataKey="civil" name="Civil" fill={COLORS.civil} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="criminal" name="Criminal" fill={COLORS.criminal} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="civil" name={t('statisticsPage.labels.civil')} fill={COLORS.civil} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="criminal" name={t('statisticsPage.labels.criminal')} fill={COLORS.criminal} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -162,8 +161,8 @@ export default function CourtStatisticsPage() {
             {/* Contested vs Uncontested */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Gavel className="w-5 h-5" /> Disposal Nature</CardTitle>
-                <CardDescription>Breakdown of contested vs uncontested disposals</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Gavel className="w-5 h-5" /> {t('statisticsPage.charts.disposalNature')}</CardTitle>
+                <CardDescription>{t('statisticsPage.charts.disposalNatureDesc')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -202,11 +201,11 @@ export default function CourtStatisticsPage() {
                   <div className="text-2xl font-bold mb-2">{formatNumber(cat.total)}</div>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Civil:</span>
+                      <span className="text-muted-foreground">{t('statisticsPage.labels.civil')}:</span>
                       <span className="font-medium">{formatNumber(cat.civil)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Criminal:</span>
+                      <span className="text-muted-foreground">{t('statisticsPage.labels.criminal')}:</span>
                       <span className="font-medium">{formatNumber(cat.criminal)}</span>
                     </div>
                   </div>
@@ -222,7 +221,7 @@ export default function CourtStatisticsPage() {
               <Card key={i} className="overflow-hidden">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" /> Cases Filed By {demo.name}
+                    <Users className="w-5 h-5" /> {t('statisticsPage.charts.casesFiledBy', { name: demo.name })}
                   </CardTitle>
                   <CardDescription>{demo.note}</CardDescription>
                 </CardHeader>
@@ -237,11 +236,11 @@ export default function CourtStatisticsPage() {
                   <div className="flex justify-between mt-2 text-sm">
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 bg-blue-500 rounded-full" />
-                      <span>Civil: {formatNumber(demo.civil)}</span>
+                      <span>{t('statisticsPage.labels.civil')}: {formatNumber(demo.civil)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-3 h-3 bg-red-500 rounded-full" />
-                      <span>Criminal: {formatNumber(demo.criminal)}</span>
+                      <span>{t('statisticsPage.labels.criminal')}: {formatNumber(demo.criminal)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -253,8 +252,8 @@ export default function CourtStatisticsPage() {
         <TabsContent value="pendency" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Age-wise Pendency</CardTitle>
-              <CardDescription>Distribution of cases based on duration pending</CardDescription>
+              <CardTitle>{t('statisticsPage.charts.ageWise')}</CardTitle>
+              <CardDescription>{t('statisticsPage.charts.ageWiseDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -264,8 +263,8 @@ export default function CourtStatisticsPage() {
                   <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
                   <Tooltip formatter={(value: number) => formatNumber(value)} />
                   <Legend />
-                  <Area type="monotone" dataKey="civil" name="Civil Cases" stackId="1" stroke={COLORS.civil} fill={COLORS.civil} />
-                  <Area type="monotone" dataKey="criminal" name="Criminal Cases" stackId="1" stroke={COLORS.criminal} fill={COLORS.criminal} />
+                  <Area type="monotone" dataKey="civil" name={t('statisticsPage.labels.civil')} stackId="1" stroke={COLORS.civil} fill={COLORS.civil} />
+                  <Area type="monotone" dataKey="criminal" name={t('statisticsPage.labels.criminal')} stackId="1" stroke={COLORS.criminal} fill={COLORS.criminal} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>

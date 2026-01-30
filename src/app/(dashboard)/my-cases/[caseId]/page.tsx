@@ -294,10 +294,10 @@ export default function CaseDetailPage() {
             caseNotes,
             nextHearingDate: nextHearingDate || null,
         });
-        toast({ title: "Success", description: "Case details have been updated." });
+        toast({ title: t('caseDetail.toasts.success'), description: t('caseDetail.toasts.updated') });
     } catch (error) {
         console.error("Error updating case: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to update case details." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.updateFailed') });
     } finally {
         setIsSaving(false);
     }
@@ -314,7 +314,7 @@ export default function CaseDetailPage() {
       });
       setOutcomeResult(outcome);
     } catch (error) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to simulate outcome." });
+      toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.simulateFailed') });
     } finally {
       setIsSimulatingOutcome(false);
     }
@@ -331,7 +331,7 @@ export default function CaseDetailPage() {
       });
       setRecommendationResult(outcome);
     } catch (error) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to get recommendations." });
+      toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.recFailed') });
     } finally {
       setIsGettingRecommendations(false);
     }
@@ -350,7 +350,7 @@ export default function CaseDetailPage() {
       });
       setJudgeAnalysisResult(result);
     } catch (error) {
-      toast({ variant: "destructive", title: "Analysis Failed", description: "Could not analyze the case." });
+      toast({ variant: "destructive", title: t('caseDetail.toasts.analysisFailed'), description: t('caseDetail.toasts.analysisFailedDesc') });
     } finally {
       setIsJudgeAnalyzing(false);
     }
@@ -364,7 +364,7 @@ export default function CaseDetailPage() {
       const result = await predictBailOutcome({ caseDetails: caseData.description });
       setBailResult(result);
     } catch (error) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to predict bail outcome." });
+      toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.bailFailed') });
     } finally {
       setIsPredictingBail(false);
     }
@@ -386,17 +386,17 @@ export default function CaseDetailPage() {
                 [myRequestField]: true,
                 status: 'closed'
             });
-            toast({ title: "Case Closed", description: "This case has been successfully closed." });
+            toast({ title: t('caseDetail.toasts.caseClosed'), description: t('caseDetail.toasts.caseClosedDesc') });
         } else {
             // This is the first request
             await updateDoc(caseRef, {
                 [myRequestField]: true
             });
-            toast({ title: "Request Sent", description: "Your request to end the case has been sent." });
+            toast({ title: t('caseDetail.toasts.requestSent'), description: t('caseDetail.toasts.requestSentDesc') });
         }
     } catch (error) {
         console.error("Error ending case: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not process the request. Please try again." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.processFailed') });
     } finally {
         setIsEndingCase(false);
         setIsEndCaseAlertOpen(false);
@@ -427,10 +427,10 @@ export default function CaseDetailPage() {
             });
         }
         
-        toast({ title: "Thank you!", description: "Your rating has been submitted." });
+        toast({ title: t('caseDetail.toasts.thankYou'), description: t('caseDetail.toasts.ratingSubmitted') });
     } catch (error) {
         console.error("Error submitting rating:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to submit rating." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.ratingFailed') });
     } finally {
         setIsSubmittingRating(false);
     }
@@ -448,12 +448,12 @@ export default function CaseDetailPage() {
             isOrder: true,
             timestamp: serverTimestamp(),
         });
-        toast({ title: "Order Issued", description: "The court order has been sent to all parties." });
+        toast({ title: t('caseDetail.toasts.orderIssued'), description: t('caseDetail.toasts.orderIssuedDesc') });
         setOrderInput('');
         setIsOrderDialogOpen(false);
     } catch (error) {
         console.error("Error issuing order: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to issue order." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.orderFailed') });
     } finally {
         setIsIssuingOrder(false);
     }
@@ -479,7 +479,7 @@ export default function CaseDetailPage() {
             videoLink: evidenceVideoLink,
             timestamp: serverTimestamp(),
         });
-        toast({ title: "Evidence Submitted", description: "Your response has been recorded." });
+        toast({ title: t('caseDetail.toasts.evidenceSubmitted'), description: t('caseDetail.toasts.evidenceSubmittedDesc') });
         setEvidenceInput('');
         setEvidenceFile(null);
         setEvidencePdfLink('');
@@ -487,7 +487,7 @@ export default function CaseDetailPage() {
         setIsOrderDialogOpen(false);
     } catch (error) {
         console.error("Error submitting evidence: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to submit evidence." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.evidenceFailed') });
     } finally {
         setIsSubmittingEvidence(false);
     }
@@ -513,7 +513,7 @@ export default function CaseDetailPage() {
             description: documentDescription,
             createdAt: serverTimestamp(),
         });
-        toast({ title: "Document Uploaded", description: "File has been added to case documents." });
+        toast({ title: t('caseDetail.toasts.docUploaded'), description: t('caseDetail.toasts.docUploadedDesc') });
         setDocumentFile(null);
         setDocumentPdfLink('');
         setDocumentVideoLink('');
@@ -521,7 +521,7 @@ export default function CaseDetailPage() {
         setIsUploadVisible(false);
     } catch (error) {
         console.error("Error uploading document: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to upload document." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.docUploadFailed') });
     } finally {
         setIsUploadingDocument(false);
     }
@@ -536,10 +536,10 @@ export default function CaseDetailPage() {
             status: 'closed',
             verdict: verdictInput,
         });
-        toast({ title: "Verdict Delivered", description: "The case has been closed with the final verdict." });
+        toast({ title: t('caseDetail.toasts.verdictDelivered'), description: t('caseDetail.toasts.verdictDeliveredDesc') });
     } catch (error) {
         console.error("Error delivering verdict: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to deliver verdict." });
+        toast({ variant: "destructive", title: t('caseDetail.toasts.error'), description: t('caseDetail.toasts.verdictFailed') });
     } finally {
         setIsDeliveringVerdict(false);
     }
@@ -558,15 +558,15 @@ export default function CaseDetailPage() {
   const myRequest = isLawyer ? caseData.lawyerRequestsToEnd : caseData.userRequestsToEnd;
   const otherPartyRequest = isLawyer ? caseData.userRequestsToEnd : caseData.lawyerRequestsToEnd;
 
-  let endCaseDescription = "If you wish to end this case, you can send a request. The case will be closed once both parties agree.";
+  let endCaseDescription = t('caseDetail.overview.endCaseDesc');
   if (myRequest) {
-      endCaseDescription = "You have requested to end this case. Waiting for the other party to confirm.";
+      endCaseDescription = t('caseDetail.overview.myRequestDesc');
   } else if (otherPartyRequest) {
-      endCaseDescription = "The other party has requested to end this case. Confirm to close the case.";
+      endCaseDescription = t('caseDetail.overview.otherRequestDesc');
   }
 
-  const endCaseButtonText = otherPartyRequest ? 'Confirm Case Closure' : 'Request to End Case';
-  const endCaseAlertDescription = otherPartyRequest ? 'By confirming, this case will be permanently closed.' : 'This will send a request to the other party to end the case. The case will be closed once they confirm.';
+  const endCaseButtonText = otherPartyRequest ? t('caseDetail.overview.confirmClosure') : t('caseDetail.overview.requestEnd');
+  const endCaseAlertDescription = otherPartyRequest ? t('caseDetail.overview.alertDescConfirm') : t('caseDetail.overview.alertDescRequest');
 
   const mostLikelyOutcome = analysisReport?.potentialOutcomes?.[0];
   const probabilityData = mostLikelyOutcome
@@ -578,12 +578,12 @@ export default function CaseDetailPage() {
     <div>
       <Tabs defaultValue="overview" className="w-full">
       <TabsList className="flex w-full h-auto p-1 bg-muted rounded-lg overflow-x-auto">
-        <TabsTrigger value="overview" className="flex-1 min-w-[90px]">Overview</TabsTrigger>
-        <TabsTrigger value="chat" className="flex-1 min-w-[90px]">Chat</TabsTrigger>
-        <TabsTrigger value="orders" className="flex-1 min-w-[90px]">Orders</TabsTrigger>
-        <TabsTrigger value="documents" className="flex-1 min-w-[90px]">Documents</TabsTrigger>
-        {isJudge && <TabsTrigger value="judge-ai" className="flex-1 min-w-[110px]">AI Analysis</TabsTrigger>}
-        {isLawyer && <TabsTrigger value="ai-toolkit" className="flex-1 min-w-[110px]">AI Toolkit</TabsTrigger>}
+        <TabsTrigger value="overview" className="flex-1 min-w-[90px]">{t('caseDetail.tabs.overview')}</TabsTrigger>
+        <TabsTrigger value="chat" className="flex-1 min-w-[90px]">{t('caseDetail.tabs.chat')}</TabsTrigger>
+        <TabsTrigger value="orders" className="flex-1 min-w-[90px]">{t('caseDetail.tabs.orders')}</TabsTrigger>
+        <TabsTrigger value="documents" className="flex-1 min-w-[90px]">{t('caseDetail.tabs.documents')}</TabsTrigger>
+        {isJudge && <TabsTrigger value="judge-ai" className="flex-1 min-w-[110px]">{t('caseDetail.tabs.judgeAi')}</TabsTrigger>}
+        {isLawyer && <TabsTrigger value="ai-toolkit" className="flex-1 min-w-[110px]">{t('caseDetail.tabs.aiToolkit')}</TabsTrigger>}
       </TabsList>
       
       <TabsContent value="overview" className="mt-4">
@@ -592,26 +592,26 @@ export default function CaseDetailPage() {
                 {isJudge && caseData.status !== 'closed' && (
                     <Card className="border-l-4 border-l-primary shadow-md">
                         <CardHeader>
-                            <CardTitle className="font-headline flex items-center gap-2"><Gavel className="w-5 h-5" /> Judicial Controls</CardTitle>
-                            <CardDescription>Manage hearings, issue orders, and deliver judgments.</CardDescription>
+                            <CardTitle className="font-headline flex items-center gap-2"><Gavel className="w-5 h-5" /> {t('caseDetail.overview.judicialControls')}</CardTitle>
+                            <CardDescription>{t('caseDetail.overview.judicialControlsDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {/* Next Hearing Date */}
                             <div className="space-y-2">
-                                <Label>Schedule Next Hearing</Label>
+                                <Label>{t('caseDetail.overview.scheduleHearing')}</Label>
                                 <div className="flex gap-2">
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !nextHearingDate && "text-muted-foreground")}>
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {nextHearingDate ? format(nextHearingDate, "PPP") : <span>Pick a date</span>}
+                                                {nextHearingDate ? format(nextHearingDate, "PPP") : <span>{t('caseDetail.overview.pickDate')}</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar mode="single" selected={nextHearingDate} onSelect={setNextHearingDate} initialFocus />
                                         </PopoverContent>
                                     </Popover>
-                                    <Button onClick={handleSaveChanges} disabled={isSaving} size="sm">Update Date</Button>
+                                    <Button onClick={handleSaveChanges} disabled={isSaving} size="sm">{t('caseDetail.overview.updateDate')}</Button>
                                 </div>
                             </div>
 
@@ -619,19 +619,19 @@ export default function CaseDetailPage() {
                             <div className="pt-4 border-t">
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button variant="default" className="w-full bg-slate-900 text-white hover:bg-slate-800">Deliver Final Verdict</Button>
+                                        <Button variant="default" className="w-full bg-slate-900 text-white hover:bg-slate-800">{t('caseDetail.overview.deliverVerdict')}</Button>
                                     </DialogTrigger>
                                     <DialogContent>
                                         <DialogHeader>
-                                            <DialogTitle>Deliver Final Verdict</DialogTitle>
-                                            <DialogDescription>This will close the case permanently.</DialogDescription>
+                                            <DialogTitle>{t('caseDetail.overview.deliverVerdict')}</DialogTitle>
+                                            <DialogDescription>{t('caseDetail.overview.deliverVerdictDesc')}</DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
-                                            <Label>Verdict / Judgment</Label>
-                                            <Textarea placeholder="Enter the final judgment details..." className="min-h-[150px]" value={verdictInput} onChange={(e) => setVerdictInput(e.target.value)} />
+                                            <Label>{t('caseDetail.overview.verdictLabel')}</Label>
+                                            <Textarea placeholder={t('caseDetail.overview.verdictPlaceholder')} className="min-h-[150px]" value={verdictInput} onChange={(e) => setVerdictInput(e.target.value)} />
                                         </div>
                                         <DialogFooter>
-                                            <Button onClick={handleDeliverVerdict} disabled={isDeliveringVerdict || !verdictInput.trim()}>{isDeliveringVerdict && <CircleDashed className="mr-2 h-4 w-4 animate-spin" />} Pronounce Verdict</Button>
+                                            <Button onClick={handleDeliverVerdict} disabled={isDeliveringVerdict || !verdictInput.trim()}>{isDeliveringVerdict && <CircleDashed className="mr-2 h-4 w-4 animate-spin" />} {t('caseDetail.overview.pronounceVerdict')}</Button>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
@@ -642,24 +642,24 @@ export default function CaseDetailPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Case Details</CardTitle>
+                        <CardTitle className="font-headline">{t('caseDetail.overview.caseDetails')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-semibold">Status</h4>
+                            <h4 className="font-semibold">{t('caseDetail.overview.status')}</h4>
                             <Badge variant={caseData.status === 'active' ? 'default' : caseData.status === 'pending' ? 'secondary' : 'destructive'}>{caseData.status}</Badge>
                         </div>
                         <div>
-                            <h4 className="font-semibold">Initial Complaint</h4>
+                            <h4 className="font-semibold">{t('caseDetail.overview.initialComplaint')}</h4>
                             <p className="text-muted-foreground text-sm">{caseData.description}</p>
                         </div>
                          <div>
-                            <h4 className="font-semibold">Case Started On</h4>
+                            <h4 className="font-semibold">{t('caseDetail.overview.startedOn')}</h4>
                             <p className="text-muted-foreground text-sm">{caseData.createdAt ? format(caseData.createdAt.toDate(), 'PPP') : 'N/A'}</p>
                         </div>
                         {caseData.status === 'closed' && caseData.verdict && (
                             <div>
-                                <h4 className="font-semibold text-primary mb-2">Final Verdict</h4>
+                                <h4 className="font-semibold text-primary mb-2">{t('caseDetail.overview.finalVerdict')}</h4>
                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-md border-l-4 border-primary text-sm leading-relaxed">{caseData.verdict}</div>
                             </div>
                         )}
@@ -667,12 +667,12 @@ export default function CaseDetailPage() {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Case Timeline &amp; Notes</CardTitle>
-                        <CardDescription>View updates and notes about the case.</CardDescription>
+                        <CardTitle className="font-headline">{t('caseDetail.overview.timelineNotes')}</CardTitle>
+                        <CardDescription>{t('caseDetail.overview.timelineNotesDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                          <div>
-                            <Label htmlFor="next-hearing">Next Hearing Date</Label>
+                            <Label htmlFor="next-hearing">{t('caseDetail.overview.nextHearing')}</Label>
                              <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -684,7 +684,7 @@ export default function CaseDetailPage() {
                                     disabled={!isLawyer || isJudge} // Disable here if judge uses the top card, or keep enabled. Let's disable to avoid confusion if judge card is present.
                                     >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {nextHearingDate ? format(nextHearingDate, "PPP") : <span>{isLawyer && !isJudge ? 'Pick a date' : 'Not set'}</span>}
+                                    {nextHearingDate ? format(nextHearingDate, "PPP") : <span>{isLawyer && !isJudge ? t('caseDetail.overview.pickDate') : t('caseDetail.overview.notSet')}</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 {isLawyer && (
@@ -700,13 +700,13 @@ export default function CaseDetailPage() {
                             </Popover>
                         </div>
                         <div>
-                            <Label htmlFor="case-notes">Case Notes</Label>
-                            <Textarea id="case-notes" value={caseNotes} onChange={(e) => isLawyer && setCaseNotes(e.target.value)} placeholder={isLawyer ? "Add private notes for this case..." : "No notes have been added yet."} className="min-h-[150px]" readOnly={!isLawyer} />
+                            <Label htmlFor="case-notes">{t('caseDetail.overview.caseNotes')}</Label>
+                            <Textarea id="case-notes" value={caseNotes} onChange={(e) => isLawyer && setCaseNotes(e.target.value)} placeholder={isLawyer ? t('caseDetail.overview.caseNotesPlaceholder') : t('caseDetail.overview.noNotes')} className="min-h-[150px]" readOnly={!isLawyer} />
                         </div>
                         {isLawyer && !isJudge && (
                             <Button onClick={handleSaveChanges} disabled={isSaving}>
                                 {isSaving && <CircleDashed className="animate-spin mr-2" />}
-                                Save Changes
+                                {t('caseDetail.overview.saveChanges')}
                             </Button>
                         )}
                     </CardContent>
@@ -715,15 +715,15 @@ export default function CaseDetailPage() {
                 {analysisReport && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="font-headline">Initial AI Case Analysis</CardTitle>
-                            <CardDescription>This is the AI-generated analysis created when the case was started.</CardDescription>
+                            <CardTitle className="font-headline">{t('caseDetail.overview.initialAnalysis')}</CardTitle>
+                            <CardDescription>{t('caseDetail.overview.initialAnalysisDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <Card className="shadow-sm">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
                                         <FileText className="w-6 h-6 text-primary" />
-                                        <CardTitle className="font-headline">{t('aiJudge.caseSummary')}</CardTitle>
+                                        <CardTitle className="font-headline">{t('caseDetail.judgeAi.desc')}</CardTitle>
                                     </div>
                                 </CardHeader>
                                 <CardContent>
@@ -736,7 +736,7 @@ export default function CaseDetailPage() {
                                     <CardHeader>
                                         <div className="flex items-center gap-3">
                                             <TrendingUp className="w-6 h-6 text-green-500" />
-                                            <CardTitle className="font-headline">{t('aiJudge.strengths')}</CardTitle>
+                                            <CardTitle className="font-headline">{t('caseDetail.judgeAi.strengths')}</CardTitle>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
@@ -749,7 +749,7 @@ export default function CaseDetailPage() {
                                     <CardHeader>
                                         <div className="flex items-center gap-3">
                                             <ShieldAlert className="w-6 h-6 text-yellow-500" />
-                                            <CardTitle className="font-headline">{t('aiJudge.weaknesses')}</CardTitle>
+                                            <CardTitle className="font-headline">{t('caseDetail.judgeAi.weaknesses')}</CardTitle>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
@@ -764,7 +764,7 @@ export default function CaseDetailPage() {
                                 <CardHeader>
                                 <div className="flex items-center gap-3">
                                     <ListChecks className="w-6 h-6 text-primary" />
-                                    <CardTitle className="font-headline">{t('aiJudge.roadmap')}</CardTitle>
+                                    <CardTitle className="font-headline">{t('caseDetail.judgeAi.recommendations')}</CardTitle>
                                 </div>
                                 </CardHeader>
                                 <CardContent>
@@ -780,7 +780,7 @@ export default function CaseDetailPage() {
                                         <CardHeader>
                                             <div className="flex items-center gap-3">
                                                 <Gavel className="w-6 h-6 text-primary" />
-                                                <CardTitle className="font-headline">{t('aiJudge.potentialOutcome')}</CardTitle>
+                                                <CardTitle className="font-headline">{t('caseDetail.judgeAi.scenarios')}</CardTitle>
                                             </div>
                                         </CardHeader>
                                         <CardContent>
@@ -812,7 +812,7 @@ export default function CaseDetailPage() {
                                     <CardHeader>
                                         <div className="flex items-center gap-3">
                                             <FileText className="w-6 h-6 text-primary" />
-                                            <CardTitle className="font-headline">{t('aiJudge.similarCases')}</CardTitle>
+                                            <CardTitle className="font-headline">{t('caseDetail.aiToolkit.similarPrecedents')}</CardTitle>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
@@ -833,7 +833,7 @@ export default function CaseDetailPage() {
 
                             <Alert variant="default" className="bg-yellow-50 border-yellow-200">
                                 <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                <AlertTitle className="font-headline text-yellow-700">{t('aiJudge.disclaimerTitle')}</AlertTitle>
+                                <AlertTitle className="font-headline text-yellow-700">{t('caseDetail.judgeAi.disclaimerTitle')}</AlertTitle>
                                 <AlertDescription className="text-yellow-600">
                                     {analysisReport.disclaimer}
                                 </AlertDescription>
@@ -845,7 +845,7 @@ export default function CaseDetailPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Case Actions</CardTitle>
+                        <CardTitle className="font-headline">{t('caseDetail.overview.caseActions')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {caseData.status !== 'closed' && !isJudge ? (
@@ -864,16 +864,16 @@ export default function CaseDetailPage() {
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogTitle>{t('caseDetail.overview.alertTitle')}</AlertDialogTitle>
                                             <AlertDialogDescription>
                                                 {endCaseAlertDescription}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel disabled={isEndingCase}>Cancel</AlertDialogCancel>
+                                            <AlertDialogCancel disabled={isEndingCase}>{t('caseDetail.overview.cancel')}</AlertDialogCancel>
                                             <AlertDialogAction onClick={handleEndCaseRequest} disabled={isEndingCase}>
                                                 {isEndingCase && <CircleDashed className="animate-spin mr-2" />}
-                                                Continue
+                                                {t('caseDetail.overview.continue')}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -881,20 +881,20 @@ export default function CaseDetailPage() {
                             </div>
                         ) : caseData.status === 'closed' ? (
                             <div className="space-y-4">
-                                <p className="text-sm font-semibold text-destructive">This case has been closed.</p>
+                                <p className="text-sm font-semibold text-destructive">{t('caseDetail.overview.caseClosed')}</p>
                                 {!isLawyer && (
                                     <div className="pt-4 border-t">
-                                        <h4 className="font-semibold mb-2">Rate your Lawyer</h4>
+                                        <h4 className="font-semibold mb-2">{t('caseDetail.overview.rateLawyer')}</h4>
                                         {caseData.userRating ? (
                                             <div className="flex items-center gap-1 text-yellow-500">
                                                 {[...Array(5)].map((_, i) => (
                                                     <Star key={i} className={cn("w-5 h-5", i < (caseData.userRating || 0) ? "fill-current" : "text-muted-foreground")} />
                                                 ))}
-                                                <span className="text-muted-foreground text-sm ml-2">You rated this case.</span>
+                                                <span className="text-muted-foreground text-sm ml-2">{t('caseDetail.overview.youRated')}</span>
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
-                                                <p className="text-sm text-muted-foreground">How was your experience working with {caseData.lawyerDisplayName}?</p>
+                                                <p className="text-sm text-muted-foreground">{t('caseDetail.overview.rateExperience', { name: caseData.lawyerDisplayName })}</p>
                                                 <div className="flex items-center gap-1">
                                                     {[1, 2, 3, 4, 5].map((star) => (
                                                         <button key={star} type="button" onClick={() => setRating(star)} className="focus:outline-none transition-transform hover:scale-110">
@@ -904,21 +904,21 @@ export default function CaseDetailPage() {
                                                 </div>
                                                 <Button size="sm" onClick={handleRateLawyer} disabled={rating === 0 || isSubmittingRating}>
                                                     {isSubmittingRating && <CircleDashed className="w-4 h-4 mr-2 animate-spin" />}
-                                                    Submit Rating
+                                                    {t('caseDetail.overview.submitRating')}
                                                 </Button>
                                             </div>
                                         )}
                                     </div>
                                 )}
                             </div>
-                        ) : isJudge ? <p className="text-sm text-muted-foreground">Judges can manage case status via the dashboard.</p> : null}
+                        ) : isJudge ? <p className="text-sm text-muted-foreground">{t('caseDetail.overview.judgeManage')}</p> : null}
                     </CardContent>
                 </Card>
             </div>
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-2"><User className="w-5 h-5 text-primary" /> Client</CardTitle>
+                        <CardTitle className="font-headline flex items-center gap-2"><User className="w-5 h-5 text-primary" /> {t('caseDetail.overview.client')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-1 text-sm">
                         <p className="font-semibold">{clientProfile?.displayName}</p>
@@ -929,7 +929,7 @@ export default function CaseDetailPage() {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary" /> Plaintiff Lawyer</CardTitle>
+                        <CardTitle className="font-headline flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary" /> {t('caseDetail.overview.plaintiffLawyer')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-1 text-sm">
                         <p className="font-semibold">{lawyerProfile?.displayName}</p>
@@ -941,7 +941,7 @@ export default function CaseDetailPage() {
                 {caseData.opposingLawyerId && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="font-headline flex items-center gap-2"><Briefcase className="w-5 h-5 text-destructive" /> Defense Lawyer</CardTitle>
+                            <CardTitle className="font-headline flex items-center gap-2"><Briefcase className="w-5 h-5 text-destructive" /> {t('caseDetail.overview.defenseLawyer')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
                             <p className="font-semibold">{opposingLawyerProfile?.displayName || caseData.opposingLawyerName}</p>
@@ -956,15 +956,15 @@ export default function CaseDetailPage() {
       <TabsContent value="chat" className="mt-4">
          <Card className="h-[calc(100vh-14rem)] flex flex-col shadow-sm">
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="font-headline">Chat</CardTitle>
+            <CardTitle className="font-headline">{t('caseDetail.chat.title')}</CardTitle>
             <div className="flex items-center gap-2">
-                <Label htmlFor="chat-select" className="text-sm text-muted-foreground">To:</Label>
+                <Label htmlFor="chat-select" className="text-sm text-muted-foreground">{t('caseDetail.chat.to')}</Label>
                 <UiSelect value={selectedChat} onValueChange={setSelectedChat}>
                     <UiSelectTrigger id="chat-select" className="w-auto md:w-[250px]">
-                        <UiSelectValue placeholder="Select recipient" />
+                        <UiSelectValue placeholder={t('caseDetail.chat.selectRecipient')} />
                     </UiSelectTrigger>
                     <UiSelectContent>
-                        <UiSelectItem value="all">Broadcast (All Parties)</UiSelectItem>
+                        <UiSelectItem value="all">{t('caseDetail.chat.broadcast')}</UiSelectItem>
                         {chatParticipants.map(p => (
                             <UiSelectItem key={p.id} value={p.id}>{p.name}</UiSelectItem>
                         ))}
@@ -985,20 +985,20 @@ export default function CaseDetailPage() {
                   <div key={message.id} className={cn('flex items-start gap-3', isUser ? 'justify-end' : 'justify-start')}>
                      {!isUser && <Avatar className="w-8 h-8 border"><AvatarFallback>{getUserInitials(senderName || 'L')}</AvatarFallback></Avatar>}
                      <div className={cn('max-w-md rounded-lg px-4 py-3 text-sm', isOrder ? 'bg-red-50 border border-red-200 text-red-900 dark:bg-red-900/20 dark:text-red-100' : isEvidence ? 'bg-blue-50 border border-blue-200 text-blue-900 dark:bg-blue-900/20 dark:text-blue-100' : isUser ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
-                       {isOrder && <div className="font-bold text-xs mb-1 flex items-center gap-1"><Gavel className="w-3 h-3" /> COURT ORDER</div>}
-                       {isEvidence && <div className="font-bold text-xs mb-1 flex items-center gap-1"><FileText className="w-3 h-3" /> SUBMISSION</div>}
+                       {isOrder && <div className="font-bold text-xs mb-1 flex items-center gap-1"><Gavel className="w-3 h-3" /> {t('caseDetail.chat.courtOrder')}</div>}
+                       {isEvidence && <div className="font-bold text-xs mb-1 flex items-center gap-1"><FileText className="w-3 h-3" /> {t('caseDetail.chat.submission')}</div>}
                        <p>{message.text}</p>
                        {message.imageUrl && (
                             <div className="mt-2">
-                                <a href={message.imageUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 underline mb-1"><ExternalLink className="w-3 h-3" /> View Image</a>
+                                <a href={message.imageUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 underline mb-1"><ExternalLink className="w-3 h-3" /> {t('caseDetail.chat.viewImage')}</a>
                                 <img src={message.imageUrl} alt="Attachment" className="max-w-full rounded-md border max-h-48" />
                             </div>
                        )}
                        {message.pdfLink && (
-                            <a href={message.pdfLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 underline mt-2 text-blue-600"><LinkIcon className="w-3 h-3" /> View Document (PDF/Drive)</a>
+                            <a href={message.pdfLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 underline mt-2 text-blue-600"><LinkIcon className="w-3 h-3" /> {t('caseDetail.chat.viewDoc')}</a>
                        )}
                        {message.videoLink && (
-                            <a href={message.videoLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 underline mt-1 text-blue-600"><Video className="w-3 h-3" /> Watch Video</a>
+                            <a href={message.videoLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 underline mt-1 text-blue-600"><Video className="w-3 h-3" /> {t('caseDetail.chat.watchVideo')}</a>
                        )}
                        <p className={cn("text-xs mt-2", isUser ? 'text-primary-foreground/70' : 'text-muted-foreground/70')}>
                          {message.timestamp ? format(message.timestamp.toDate(), 'p') : ''}
@@ -1013,7 +1013,7 @@ export default function CaseDetailPage() {
           <div className="p-4 border-t">
             <div className="relative">
               <Textarea
-                placeholder="Type your message..."
+                placeholder={t('caseDetail.chat.typeMessage')}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
@@ -1028,7 +1028,7 @@ export default function CaseDetailPage() {
               />
               <Button type="submit" size="icon" className="absolute top-1/2 right-3 -translate-y-1/2" onClick={handleSendMessage} disabled={isSending || !newMessage.trim()}>
                 {isSending ? <CircleDashed className="w-4 h-4 animate-spin" /> : <CornerDownLeft className="w-4 h-4" />}
-                <span className="sr-only">Send</span>
+                <span className="sr-only">{t('caseDetail.chat.send')}</span>
               </Button>
             </div>
           </div>
@@ -1039,13 +1039,13 @@ export default function CaseDetailPage() {
         <Card className="border-t-4 border-t-destructive shadow-sm h-[calc(100vh-14rem)] flex flex-col">
             <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
                 <div>
-                    <CardTitle className="font-headline flex items-center gap-2"><Gavel className="w-5 h-5 text-destructive" /> Court Orders &amp; Submissions</CardTitle>
-                    <CardDescription>Official orders from the Judge and evidence submissions from Lawyers.</CardDescription>
+                    <CardTitle className="font-headline flex items-center gap-2"><Gavel className="w-5 h-5 text-destructive" /> {t('caseDetail.orders.title')}</CardTitle>
+                    <CardDescription>{t('caseDetail.orders.desc')}</CardDescription>
                 </div>
                 {(isJudge || (isLawyer && !isJudge)) && caseData.status !== 'closed' && (
                     <Button onClick={() => setIsOrderDialogOpen(true)} size="sm">
                         <Plus className="w-4 h-4 mr-2" />
-                        {isJudge ? "Issue New Order" : "Submit Response"}
+                        {isJudge ? t('caseDetail.orders.issueOrder') : t('caseDetail.orders.submitResponse')}
                     </Button>
                 )}
             </CardHeader>
@@ -1054,16 +1054,16 @@ export default function CaseDetailPage() {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search orders & submissions..."
+                            placeholder={t('caseDetail.orders.searchPlaceholder')}
                             value={orderSearch}
                             onChange={(e) => setOrderSearch(e.target.value)}
                             className="pl-10"
                         />
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                        <Button size="sm" variant={orderFilter === 'all' ? 'default' : 'outline'} onClick={() => setOrderFilter('all')}>All</Button>
-                        <Button size="sm" variant={orderFilter === 'orders' ? 'default' : 'outline'} onClick={() => setOrderFilter('orders')}>Orders</Button>
-                        <Button size="sm" variant={orderFilter === 'submissions' ? 'default' : 'outline'} onClick={() => setOrderFilter('submissions')}>Submissions</Button>
+                        <Button size="sm" variant={orderFilter === 'all' ? 'default' : 'outline'} onClick={() => setOrderFilter('all')}>{t('caseDetail.orders.all')}</Button>
+                        <Button size="sm" variant={orderFilter === 'orders' ? 'default' : 'outline'} onClick={() => setOrderFilter('orders')}>{t('caseDetail.orders.orders')}</Button>
+                        <Button size="sm" variant={orderFilter === 'submissions' ? 'default' : 'outline'} onClick={() => setOrderFilter('submissions')}>{t('caseDetail.orders.submissions')}</Button>
                     </div>
                 </div>
 
@@ -1075,7 +1075,7 @@ export default function CaseDetailPage() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 font-semibold">
                                             {msg.isOrder ? <Gavel className="w-4 h-4 text-destructive" /> : <FileText className="w-4 h-4 text-primary" />}
-                                            <span className={msg.isOrder ? "text-destructive" : "text-primary"}>{msg.isOrder ? 'Court Order' : 'Submission'}</span>
+                                            <span className={msg.isOrder ? "text-destructive" : "text-primary"}>{msg.isOrder ? t('caseDetail.chat.courtOrder') : t('caseDetail.chat.submission')}</span>
                                         </div>
                                         <span className="text-xs text-muted-foreground">{msg.timestamp ? format(msg.timestamp.toDate(), 'PPP p') : ''}</span>
                                     </div>
@@ -1091,10 +1091,10 @@ export default function CaseDetailPage() {
                                         </div>
                                     )}
                                     {msg.pdfLink && (
-                                        <a href={msg.pdfLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 text-blue-600 hover:underline mt-1"><LinkIcon className="w-3 h-3" /> External Document Link</a>
+                                        <a href={msg.pdfLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 text-blue-600 hover:underline mt-1"><LinkIcon className="w-3 h-3" /> {t('caseDetail.orders.externalDoc')}</a>
                                     )}
                                     {msg.videoLink && (
-                                        <a href={msg.videoLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 text-blue-600 hover:underline mt-1"><Video className="w-3 h-3" /> External Video Link</a>
+                                        <a href={msg.videoLink} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 text-blue-600 hover:underline mt-1"><Video className="w-3 h-3" /> {t('caseDetail.orders.externalVideo')}</a>
                                     )}
                                 </div>
                             ))}
@@ -1102,7 +1102,7 @@ export default function CaseDetailPage() {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50">
                             <Search className="w-8 h-8 mb-2" />
-                            <p className="text-sm">No items match your search or filter.</p>
+                            <p className="text-sm">{t('caseDetail.orders.noItems')}</p>
                         </div>
                     )}
                 </ScrollArea>
@@ -1114,8 +1114,8 @@ export default function CaseDetailPage() {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle className="font-headline flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /> Case Documents</CardTitle>
-                    <CardDescription>Manage and view all documents related to this case.</CardDescription>
+                    <CardTitle className="font-headline flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /> {t('caseDetail.documents.title')}</CardTitle>
+                    <CardDescription>{t('caseDetail.documents.desc')}</CardDescription>
                 </div>
                 {(isLawyer || isJudge) && (
                     <Button onClick={() => setIsUploadVisible(true)} size="sm" className="h-9">
@@ -1125,10 +1125,10 @@ export default function CaseDetailPage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center gap-2">
-                    <Button size="sm" variant={documentFilter === 'all' ? 'default' : 'outline'} onClick={() => setDocumentFilter('all')}>All</Button>
-                    <Button size="sm" variant={documentFilter === 'plaintiff' ? 'default' : 'outline'} onClick={() => setDocumentFilter('plaintiff')}>Plaintiff</Button>
-                    <Button size="sm" variant={documentFilter === 'defense' ? 'default' : 'outline'} onClick={() => setDocumentFilter('defense')}>Defense</Button>
-                    <Button size="sm" variant={documentFilter === 'court' ? 'default' : 'outline'} onClick={() => setDocumentFilter('court')}>Court</Button>
+                    <Button size="sm" variant={documentFilter === 'all' ? 'default' : 'outline'} onClick={() => setDocumentFilter('all')}>{t('caseDetail.documents.all')}</Button>
+                    <Button size="sm" variant={documentFilter === 'plaintiff' ? 'default' : 'outline'} onClick={() => setDocumentFilter('plaintiff')}>{t('caseDetail.documents.plaintiff')}</Button>
+                    <Button size="sm" variant={documentFilter === 'defense' ? 'default' : 'outline'} onClick={() => setDocumentFilter('defense')}>{t('caseDetail.documents.defense')}</Button>
+                    <Button size="sm" variant={documentFilter === 'court' ? 'default' : 'outline'} onClick={() => setDocumentFilter('court')}>{t('caseDetail.documents.court')}</Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1143,18 +1143,18 @@ export default function CaseDetailPage() {
                             </div>
                             <div className="p-3">
                                 <p className="font-medium truncate text-sm" title={doc.name}>{doc.name}</p>
-                                {doc.uploaderName && <p className="text-[10px] text-muted-foreground">By: {doc.uploaderName}</p>}
+                                {doc.uploaderName && <p className="text-[10px] text-muted-foreground">{t('caseDetail.documents.by')} {doc.uploaderName}</p>}
                                 {doc.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2" title={doc.description}>{doc.description}</p>}
-                                <p className="text-xs text-muted-foreground mt-1">{doc.createdAt ? format(doc.createdAt.toDate(), 'PPP') : 'Unknown date'}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{doc.createdAt ? format(doc.createdAt.toDate(), 'PPP') : t('caseDetail.documents.unknownDate')}</p>
                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    {doc.url && <Button variant="link" size="sm" className="px-0 h-auto" onClick={() => setViewingImageUrl(doc.url)}>View Image <ExternalLink className="ml-1 w-3 h-3" /></Button>}
-                                    {doc.pdfLink && <Button variant="link" size="sm" className="px-0 h-auto" asChild><a href={doc.pdfLink} target="_blank" rel="noopener noreferrer">Open Doc <LinkIcon className="ml-1 w-3 h-3" /></a></Button>}
-                                    {doc.videoLink && <Button variant="link" size="sm" className="px-0 h-auto" asChild><a href={doc.videoLink} target="_blank" rel="noopener noreferrer">Watch Video <Video className="ml-1 w-3 h-3" /></a></Button>}
+                                    {doc.url && <Button variant="link" size="sm" className="px-0 h-auto" onClick={() => setViewingImageUrl(doc.url)}>{t('caseDetail.documents.viewImage')} <ExternalLink className="ml-1 w-3 h-3" /></Button>}
+                                    {doc.pdfLink && <Button variant="link" size="sm" className="px-0 h-auto" asChild><a href={doc.pdfLink} target="_blank" rel="noopener noreferrer">{t('caseDetail.documents.openDoc')} <LinkIcon className="ml-1 w-3 h-3" /></a></Button>}
+                                    {doc.videoLink && <Button variant="link" size="sm" className="px-0 h-auto" asChild><a href={doc.videoLink} target="_blank" rel="noopener noreferrer">{t('caseDetail.documents.watchVideo')} <Video className="ml-1 w-3 h-3" /></a></Button>}
                                 </div>
                             </div>
                         </Card>
                     ))}
-                    {filteredDocuments.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No documents found.</p>}
+                    {filteredDocuments.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">{t('caseDetail.documents.noDocs')}</p>}
                 </div>
             </CardContent>
         </Card>
@@ -1164,18 +1164,18 @@ export default function CaseDetailPage() {
         <TabsContent value="judge-ai" className="mt-4">
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary" /> Judicial AI Assistant</CardTitle>
-                    <CardDescription>Get real-time analysis, potential outcomes, and suggestions based on case details.</CardDescription>
+                    <CardTitle className="font-headline flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary" /> {t('caseDetail.judgeAi.title')}</CardTitle>
+                    <CardDescription>{t('caseDetail.judgeAi.desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {!judgeAnalysisResult && (
                         <div className="flex flex-col items-center justify-center py-8 space-y-4">
                             <p className="text-muted-foreground text-center max-w-md">
-                                Analyze the current case details to get insights on strengths, weaknesses, and likely outcomes to assist in your judgment.
+                                {t('caseDetail.judgeAi.analyzePrompt')}
                             </p>
                             <Button onClick={handleJudgeAnalysis} disabled={isJudgeAnalyzing} size="lg">
                                 {isJudgeAnalyzing && <CircleDashed className="mr-2 h-5 w-5 animate-spin" />}
-                                {isJudgeAnalyzing ? 'Analyzing Case...' : 'Generate AI Analysis'}
+                                {isJudgeAnalyzing ? t('caseDetail.judgeAi.analyzing') : t('caseDetail.judgeAi.generate')}
                             </Button>
                         </div>
                     )}
@@ -1184,13 +1184,13 @@ export default function CaseDetailPage() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex justify-end">
                                 <Button variant="outline" size="sm" onClick={handleJudgeAnalysis} disabled={isJudgeAnalyzing}>
-                                    <TrendingUp className="w-4 h-4 mr-2" /> Refresh Analysis
+                                    <TrendingUp className="w-4 h-4 mr-2" /> {t('caseDetail.judgeAi.refresh')}
                                 </Button>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Card className="bg-muted/30">
-                                    <CardHeader className="pb-2"><CardTitle className="text-base font-semibold text-green-600">Key Strengths</CardTitle></CardHeader>
+                                    <CardHeader className="pb-2"><CardTitle className="text-base font-semibold text-green-600">{t('caseDetail.judgeAi.strengths')}</CardTitle></CardHeader>
                                     <CardContent>
                                         <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
                                             {judgeAnalysisResult.strengths.map((s, i) => <li key={i}>{s}</li>)}
@@ -1198,7 +1198,7 @@ export default function CaseDetailPage() {
                                     </CardContent>
                                 </Card>
                                 <Card className="bg-muted/30">
-                                    <CardHeader className="pb-2"><CardTitle className="text-base font-semibold text-red-600">Weaknesses & Risks</CardTitle></CardHeader>
+                                    <CardHeader className="pb-2"><CardTitle className="text-base font-semibold text-red-600">{t('caseDetail.judgeAi.weaknesses')}</CardTitle></CardHeader>
                                     <CardContent>
                                         <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
                                             {judgeAnalysisResult.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
@@ -1208,21 +1208,21 @@ export default function CaseDetailPage() {
                             </div>
 
                             <Card className="border-l-4 border-l-primary">
-                                <CardHeader><CardTitle className="text-lg">AI Suggested Outcomes & Tips</CardTitle></CardHeader>
+                                <CardHeader><CardTitle className="text-lg">{t('caseDetail.judgeAi.outcomesTips')}</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <div>
-                                        <h4 className="font-semibold text-sm mb-2">Potential Scenarios</h4>
+                                        <h4 className="font-semibold text-sm mb-2">{t('caseDetail.judgeAi.scenarios')}</h4>
                                         <ul className="space-y-2">
                                             {judgeAnalysisResult.potentialOutcomes.map((outcome, i) => (
                                                 <li key={i} className="flex justify-between items-center bg-background p-3 rounded-md border text-sm">
                                                     <span>{outcome.outcome}</span>
-                                                    <Badge variant={i === 0 ? "default" : "secondary"}>{(outcome.probability * 100).toFixed(0)}% Probability</Badge>
+                                                    <Badge variant={i === 0 ? "default" : "secondary"}>{(outcome.probability * 100).toFixed(0)}% {t('caseDetail.aiToolkit.likelihood')}</Badge>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-sm mb-2">Recommendations</h4>
+                                        <h4 className="font-semibold text-sm mb-2">{t('caseDetail.judgeAi.recommendations')}</h4>
                                         <ul className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
                                             {judgeAnalysisResult.recommendedNextSteps.map((step, i) => <li key={i}>{step}</li>)}
                                         </ul>
@@ -1232,9 +1232,9 @@ export default function CaseDetailPage() {
 
                             <Alert className="bg-yellow-50 border-yellow-200 text-yellow-800">
                                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                <AlertTitle>AI Disclaimer</AlertTitle>
+                                <AlertTitle>{t('caseDetail.judgeAi.disclaimerTitle')}</AlertTitle>
                                 <AlertDescription className="text-xs">
-                                    This analysis is generated by AI based on the provided case description. It is for informational purposes only and should not be considered as a substitute for judicial discretion or legal precedent.
+                                    {t('caseDetail.judgeAi.disclaimer')}
                                 </AlertDescription>
                             </Alert>
                         </div>
@@ -1249,26 +1249,26 @@ export default function CaseDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-2"><Gavel className="w-5 h-5 text-primary" /> Case Outcome Simulation</CardTitle>
-                        <CardDescription>Get an AI-driven prediction on the potential court outcome.</CardDescription>
+                        <CardTitle className="font-headline flex items-center gap-2"><Gavel className="w-5 h-5 text-primary" /> {t('caseDetail.aiToolkit.simulationTitle')}</CardTitle>
+                        <CardDescription>{t('caseDetail.aiToolkit.simulationDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button onClick={handleSimulateOutcome} disabled={isSimulatingOutcome}>
                             {isSimulatingOutcome && <CircleDashed className="animate-spin mr-2" />}
-                            Simulate Outcome
+                            {t('caseDetail.aiToolkit.simulateBtn')}
                         </Button>
                         {isSimulatingOutcome && <Skeleton className="w-full h-24 mt-4" />}
                         {outcomeResult && outcomeResult.potentialOutcomes && outcomeResult.potentialOutcomes.length > 0 && (
                              <div className="mt-4 space-y-4">
                                 <Card>
                                     <CardContent className="pt-6">
-                                        <h3 className="font-semibold text-center text-lg text-primary">{(outcomeResult.potentialOutcomes[0].probability * 100).toFixed(0)}% Likelihood</h3>
+                                        <h3 className="font-semibold text-center text-lg text-primary">{(outcomeResult.potentialOutcomes[0].probability * 100).toFixed(0)}% {t('caseDetail.aiToolkit.likelihood')}</h3>
                                         <p className="text-sm text-muted-foreground mt-2">{outcomeResult.potentialOutcomes[0].outcome}</p>
                                     </CardContent>
                                 </Card>
                                 <Alert variant="default" className="bg-yellow-50 border-yellow-200">
                                     <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                    <AlertTitle className="font-headline text-yellow-700">Disclaimer</AlertTitle>
+                                    <AlertTitle className="font-headline text-yellow-700">{t('caseDetail.aiToolkit.disclaimer')}</AlertTitle>
                                     <AlertDescription className="text-yellow-600">
                                         {outcomeResult.disclaimer}
                                     </AlertDescription>
@@ -1279,13 +1279,13 @@ export default function CaseDetailPage() {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-2"><Scale className="w-5 h-5 text-primary" /> Bail Predictor</CardTitle>
-                        <CardDescription>Analyze the likelihood of bail being granted for this case.</CardDescription>
+                        <CardTitle className="font-headline flex items-center gap-2"><Scale className="w-5 h-5 text-primary" /> {t('caseDetail.aiToolkit.bailTitle')}</CardTitle>
+                        <CardDescription>{t('caseDetail.aiToolkit.bailDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                          <Button onClick={handlePredictBail} disabled={isPredictingBail}>
                             {isPredictingBail && <CircleDashed className="animate-spin mr-2" />}
-                            Predict Bail Likelihood
+                            {t('caseDetail.aiToolkit.predictBailBtn')}
                         </Button>
                         {isPredictingBail && <Skeleton className="w-full h-24 mt-4" />}
                         {bailResult && (
@@ -1298,7 +1298,7 @@ export default function CaseDetailPage() {
                                 </Card>
                                 <Alert variant="default" className="bg-yellow-50 border-yellow-200">
                                     <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                    <AlertTitle className="font-headline text-yellow-700">Disclaimer</AlertTitle>
+                                    <AlertTitle className="font-headline text-yellow-700">{t('caseDetail.aiToolkit.disclaimer')}</AlertTitle>
                                     <AlertDescription className="text-yellow-600">
                                         {bailResult.disclaimer}
                                     </AlertDescription>
@@ -1309,18 +1309,18 @@ export default function CaseDetailPage() {
                 </Card>
                 <Card className="md:col-span-2">
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-2"><BookCopy className="w-5 h-5 text-primary" /> Judgment Recommendation</CardTitle>
-                        <CardDescription>Get judgment recommendations based on similar case precedents.</CardDescription>
+                        <CardTitle className="font-headline flex items-center gap-2"><BookCopy className="w-5 h-5 text-primary" /> {t('caseDetail.aiToolkit.judgmentRecTitle')}</CardTitle>
+                        <CardDescription>{t('caseDetail.aiToolkit.judgmentRecDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button onClick={handleGetRecommendations} disabled={isGettingRecommendations}>
                             {isGettingRecommendations && <CircleDashed className="animate-spin mr-2" />}
-                            Get Recommendations
+                            {t('caseDetail.aiToolkit.getRecBtn')}
                         </Button>
                         {isGettingRecommendations && <Skeleton className="w-full h-40 mt-4" />}
                         {recommendationResult && (
                             <div className="mt-4 space-y-4">
-                                <h4 className="font-semibold">Similar Case Precedents:</h4>
+                                <h4 className="font-semibold">{t('caseDetail.aiToolkit.similarPrecedents')}</h4>
                                 <Accordion type="single" collapsible className="w-full">
                                     {recommendationResult.similarCasePrecedents.map((precedent, index) => (
                                     <AccordionItem value={`item-${index}`} key={index}>
@@ -1329,7 +1329,7 @@ export default function CaseDetailPage() {
                                         <p className="text-sm text-muted-foreground">{precedent.summary}</p>
                                         {precedent.relevantLinks && precedent.relevantLinks.length > 0 && (
                                             <div className="mt-2 pt-2 border-t">
-                                                <p className="text-xs font-semibold mb-1">External Resources:</p>
+                                                <p className="text-xs font-semibold mb-1">{t('caseDetail.aiToolkit.externalResources')}</p>
                                                 <ul className="space-y-1">
                                                     {precedent.relevantLinks.map((link, i) => (
                                                         <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> {link}</a></li>
@@ -1352,8 +1352,8 @@ export default function CaseDetailPage() {
 
     <Dialog open={!!viewingImageUrl} onOpenChange={(open) => !open && setViewingImageUrl(null)}>
         <DialogContent className="max-w-5xl w-full h-[85vh] p-0 bg-black/90 border-none flex items-center justify-center">
-            <DialogTitle className="sr-only">Document Viewer</DialogTitle>
-            <DialogDescription className="sr-only">View full size document</DialogDescription>
+            <DialogTitle className="sr-only">{t('caseDetail.dialogs.viewerTitle')}</DialogTitle>
+            <DialogDescription className="sr-only">{t('caseDetail.dialogs.viewerDesc')}</DialogDescription>
             {viewingImageUrl && (
                 <div className="relative w-full h-full flex items-center justify-center p-4">
                     <img 
@@ -1369,18 +1369,18 @@ export default function CaseDetailPage() {
     <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>{isJudge ? "Issue Court Order" : "Submit Response / Evidence"}</DialogTitle>
+                <DialogTitle>{isJudge ? t('caseDetail.dialogs.issueOrderTitle') : t('caseDetail.dialogs.submitResponseTitle')}</DialogTitle>
                 <DialogDescription>
-                    {isJudge ? "Create a new official order or demand for documents." : "Submit your compliance report or evidence to the court."}
+                    {isJudge ? t('caseDetail.dialogs.issueOrderDesc') : t('caseDetail.dialogs.submitResponseDesc')}
                 </DialogDescription>
             </DialogHeader>
             
             {isJudge ? (
                 <div className="space-y-4 py-2">
                     <div className="space-y-2">
-                        <Label>Order Details</Label>
+                        <Label>{t('caseDetail.dialogs.orderDetails')}</Label>
                         <Textarea 
-                            placeholder="Enter court order details..." 
+                            placeholder={t('caseDetail.dialogs.enterOrder')}
                             value={orderInput}
                             onChange={(e) => setOrderInput(e.target.value)}
                             className="min-h-[100px]"
@@ -1388,29 +1388,29 @@ export default function CaseDetailPage() {
                     </div>
                     <Button onClick={handleIssueOrder} disabled={isIssuingOrder || !orderInput.trim()} className="w-full">
                         {isIssuingOrder ? <CircleDashed className="w-4 h-4 animate-spin mr-2" /> : <Gavel className="w-4 h-4 mr-2" />}
-                        Issue Order
+                        {t('caseDetail.dialogs.issueBtn')}
                     </Button>
                 </div>
             ) : (
                 <div className="space-y-4 py-2">
                     <div className="space-y-2">
-                        <Label>Response Description</Label>
+                        <Label>{t('caseDetail.dialogs.responseDesc')}</Label>
                         <Textarea 
-                            placeholder="Describe evidence or compliance..." 
+                            placeholder={t('caseDetail.dialogs.describeEvidence')}
                             value={evidenceInput}
                             onChange={(e) => setEvidenceInput(e.target.value)}
                             className="min-h-[100px]"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label>Attachments (Optional)</Label>
+                        <Label>{t('caseDetail.dialogs.attachments')}</Label>
                         <Input type="file" accept="image/*" onChange={(e) => setEvidenceFile(e.target.files?.[0] || null)} />
-                        <Input placeholder="PDF / Drive Link" value={evidencePdfLink} onChange={(e) => setEvidencePdfLink(e.target.value)} className="mt-2" />
-                        <Input placeholder="Video Link" value={evidenceVideoLink} onChange={(e) => setEvidenceVideoLink(e.target.value)} className="mt-2" />
+                        <Input placeholder={t('caseDetail.dialogs.pdfLink')} value={evidencePdfLink} onChange={(e) => setEvidencePdfLink(e.target.value)} className="mt-2" />
+                        <Input placeholder={t('caseDetail.dialogs.videoLink')} value={evidenceVideoLink} onChange={(e) => setEvidenceVideoLink(e.target.value)} className="mt-2" />
                     </div>
                     <Button onClick={handleSubmitEvidence} disabled={isSubmittingEvidence || (!evidenceInput.trim() && !evidenceFile && !evidencePdfLink && !evidenceVideoLink)} className="w-full">
                         {isSubmittingEvidence ? <CircleDashed className="w-4 h-4 animate-spin mr-2" /> : <UploadCloud className="w-4 h-4 mr-2" />}
-                        Submit Response
+                        {t('caseDetail.dialogs.submitBtn')}
                     </Button>
                 </div>
             )}
@@ -1420,21 +1420,21 @@ export default function CaseDetailPage() {
     <Dialog open={isUploadVisible} onOpenChange={setIsUploadVisible}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Upload Case Document</DialogTitle>
-                <DialogDescription>Add a new document, image, or link to the case files.</DialogDescription>
+                <DialogTitle>{t('caseDetail.dialogs.uploadTitle')}</DialogTitle>
+                <DialogDescription>{t('caseDetail.dialogs.uploadDesc')}</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
                 <div className="grid w-full items-center gap-3">
-                    <Label htmlFor="document-upload">Upload Document (Image)</Label>
+                    <Label htmlFor="document-upload">{t('caseDetail.dialogs.uploadLabel')}</Label>
                     <Input id="document-upload" type="file" accept="image/*" onChange={(e) => setDocumentFile(e.target.files?.[0] || null)} />
                     
-                    <Input placeholder="PDF / Drive Link (Optional)" value={documentPdfLink} onChange={(e) => setDocumentPdfLink(e.target.value)} />
-                    <Input placeholder="Video Link (Optional)" value={documentVideoLink} onChange={(e) => setDocumentVideoLink(e.target.value)} />
-                    <Input placeholder="Document description or notes..." value={documentDescription} onChange={(e) => setDocumentDescription(e.target.value)} />
+                    <Input placeholder={t('caseDetail.dialogs.pdfLinkOptional')} value={documentPdfLink} onChange={(e) => setDocumentPdfLink(e.target.value)} />
+                    <Input placeholder={t('caseDetail.dialogs.videoLinkOptional')} value={documentVideoLink} onChange={(e) => setDocumentVideoLink(e.target.value)} />
+                    <Input placeholder={t('caseDetail.dialogs.docDesc')} value={documentDescription} onChange={(e) => setDocumentDescription(e.target.value)} />
                 </div>
                 <Button onClick={handleUploadDocument} disabled={isUploadingDocument || (!documentFile && !documentPdfLink && !documentVideoLink)} className="w-full">
                     {isUploadingDocument && <CircleDashed className="mr-2 h-4 w-4 animate-spin" />}
-                    Upload Document
+                    {t('caseDetail.dialogs.uploadBtn')}
                 </Button>
             </div>
         </DialogContent>

@@ -26,6 +26,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast"
+import { useLanguage } from '@/hooks/use-language';
 
 // Configure PDF.js worker
 if (typeof window !== 'undefined') {
@@ -43,7 +44,7 @@ function splitSentences(text: string): string[] {
 
 class RealWorldLegalExtractor {
     extractHeaderInfo(text: string) {
-        const lines = text.split('\n');
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
         const meta = {
             court: "Unknown Court",
             petitioner: "Unknown",
@@ -54,15 +55,15 @@ class RealWorldLegalExtractor {
 
         // A. Extract Court (Look in first 20 lines)
         const headerText = lines.slice(0, 20).join('\n');
-        const courtMatch = headerText.match(/(IN THE SUPREME COURT|IN THE HIGH COURT|DISTRICT COURT).{0,30}/i);
+        const courtMatch = headerText.match(/(IN THE SUPREME COURT|IN THE HIGH COURT|DISTRICT COURT|BEFORE THE).{0,50}/i);
         if (courtMatch) {
-            meta.court = courtMatch[0].trim();
+            meta.court = courtMatch[0].replace(/[\r\n]+/g, ' ').trim();
         }
 
         // B. Extract Parties (The 'VERSUS' Strategy)
         let vsIndex = -1;
         for (let i = 0; i < Math.min(lines.length, 50); i++) {
-            if (/\b(VERSUS|Vs\.?|V\/s|V\.|AGAINST)\b/i.test(lines[i])) {
+            if (/^\s*(VERSUS|Vs\.?|V\/s|V\.|AGAINST)\s*$/i.test(lines[i]) || /\b(VERSUS|Vs\.?|V\/s|V\.|AGAINST)\b/i.test(lines[i])) {
                 vsIndex = i;
                 break;
             }
@@ -72,23 +73,47 @@ class RealWorldLegalExtractor {
             // Petitioner is usually 1-2 non-empty lines ABOVE 'Versus'
             for (let i = vsIndex - 1; i >= 0; i--) {
                 const line = lines[i].trim();
-                if (line.length > 3 && !/^(BETWEEN|AND|IN THE|CIVIL|CRIMINAL|APPEAL|SLP|NO\.)/i.test(line)) {
-                    meta.petitioner = line.replace(/(\.\.\.|…)?\s*(Appellants?|Petitioners?|Plaintiff).*/i, "").trim();
-                    break;
+                // Skip lines that are just dots or symbols
+                if (/^[\.\-_]+$/.test(line)) continue;
+
+                if (line.length > 2 && !/^(BETWEEN|AND|IN THE|CIVIL (APPEAL|WRIT|REVISION|SUIT)|CRIMINAL (APPEAL|WRIT|REVISION)|SLP|NO\.|CASE NO)/i.test(line)) {
+                    let cleaned = line;
+                    // Remove suffix label (e.g. "Name ... Petitioner")
+                    cleaned = cleaned.replace(/(\.\.\.|…)?\s*(Appellants?|Petitioners?|Plaintiff|Complainant|Applicant)\s*$/i, "");
+                    // Remove prefix label (e.g. "Petitioner: Name")
+                    cleaned = cleaned.replace(/^\s*(The\s+)?(Appellants?|Petitioners?|Plaintiff|Complainant|Applicant)\s*[:\-]?\s*/i, "");
+                    
+                    cleaned = cleaned.replace(/[\.\-_]+$/, "").trim();
+                    if (cleaned.length > 2) {
+                        meta.petitioner = cleaned;
+                        break;
+                    }
                 }
             }
             // Respondent is usually 1-2 non-empty lines BELOW 'Versus'
             for (let i = vsIndex + 1; i < lines.length; i++) {
                 const line = lines[i].trim();
-                if (line.length > 3) {
-                    meta.respondent = line.replace(/(\.\.\.|…)?\s*(Respondents?|Defendants?|State).*/i, "").trim();
-                    break;
+                // Skip lines that are just dots or symbols
+                if (/^[\.\-_]+$/.test(line)) continue;
+
+                if (line.length > 2 && !/^(AND|THROUGH|CORAM|BEFORE)/i.test(line)) {
+                    let cleaned = line;
+                    // Remove suffix label
+                    cleaned = cleaned.replace(/(\.\.\.|…)?\s*(Respondents?|Defendants?|State|Opposite Party)\s*$/i, "");
+                    // Remove prefix label
+                    cleaned = cleaned.replace(/^\s*(The\s+)?(Respondents?|Defendants?|State|Opposite Party)\s*[:\-]?\s*/i, "");
+
+                    cleaned = cleaned.replace(/[\.\-_]+$/, "").trim();
+                    if (cleaned.length > 2) {
+                        meta.respondent = cleaned;
+                        break;
+                    }
                 }
             }
         }
 
         // C. Extract Date
-        const dateMatch = text.match(/(?:Date of Judgment|Dated|Date)\s*[:\-]\s*(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s+\d{4})/i);
+        const dateMatch = text.match(/(?:Date of Judgment|Dated|Date|Decided on)\s*[:\-]?\s*(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s*,?\s*\d{4}|\d{1,2}[./-]\d{1,2}[./-]\d{4})/i);
         if (dateMatch) {
             meta.date = dateMatch[1];
         } else {
@@ -98,7 +123,7 @@ class RealWorldLegalExtractor {
         }
 
         // D. Extract Case ID
-        const caseMatch = headerText.match(/(Criminal Appeal|Civil Appeal|SLP|FIR)\s*(No\.|Number)?\s*[\w\d\s/]+/i);
+        const caseMatch = headerText.match(/(Criminal Appeal|Civil Appeal|SLP|FIR|Writ Petition|Case)\s*(No\.|Number)?\s*[\w\d\s/]+/i);
         if (caseMatch) {
             meta.caseId = caseMatch[0].trim();
         }
@@ -123,6 +148,9 @@ class RealWorldLegalExtractor {
             let act = match[2].trim();
             const sec = match[1];
 
+            // Remove trailing dots or punctuation from Act name
+            act = act.replace(/[\.\s]+$/, "");
+
             // Normalize Act Name
             for (const [fullName, shortName] of Object.entries(actMap)) {
                 if (act.toLowerCase().includes(fullName.toLowerCase())) {
@@ -132,7 +160,7 @@ class RealWorldLegalExtractor {
             }
 
             // Filter garbage
-            if (act.length > 3 && act.length < 30 && (act.includes("Act") || ["IPC", "CrPC", "Constitution"].includes(act))) {
+            if (act.length > 3 && act.length < 40 && (act.includes("Act") || ["IPC", "CrPC", "Constitution"].includes(act))) {
                 laws.add(`${act} Sec ${sec}`);
             }
         }
@@ -206,6 +234,7 @@ export default function DocumentSummarizationPage() {
   const [isParsing, setIsParsing] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -244,7 +273,7 @@ export default function DocumentSummarizationPage() {
         Array.from({ length: pdf.numPages }, (_, i) => i + 1).map(async (pageNumber) => {
           const page = await pdf.getPage(pageNumber);
           const textContent = await page.getTextContent();
-          return textContent.items.map((item: any) => item.str).join(' ');
+          return textContent.items.map((item: any) => item.str).join('\n');
         })
       );
       
@@ -294,10 +323,10 @@ export default function DocumentSummarizationPage() {
       {/* Header Section */}
       <div className="text-center space-y-4 pt-4">
         <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl text-primary">
-          AI Legal Case Extraction
+          {t('summarize.title')}
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Transform complex judgments into clear, structured insights. Upload a PDF or paste text to get started.
+          {t('summarize.subtitle')}
         </p>
       </div>
 
@@ -306,7 +335,7 @@ export default function DocumentSummarizationPage() {
         <div className="bg-muted/30 p-6 border-b">
             <h2 className="text-lg font-semibold flex items-center gap-2">
                 <BookText className="w-5 h-5 text-primary" />
-                Document Input
+                {t('summarize.uploadTitle')}
             </h2>
         </div>
         <CardContent className="p-6">
@@ -314,7 +343,7 @@ export default function DocumentSummarizationPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormItem>
-                    <FormLabel className="text-base font-medium">Upload Judgment (PDF)</FormLabel>
+                    <FormLabel className="text-base font-medium">{t('summarize.uploadLabel')}</FormLabel>
                     <div className="mt-2">
                         <label
                             htmlFor="file-upload"
@@ -356,10 +385,10 @@ export default function DocumentSummarizationPage() {
                     name="documentContent"
                     render={({ field }) => (
                       <FormItem className="flex flex-col h-full">
-                        <FormLabel className="text-base font-medium">Or Paste Text</FormLabel>
+                        <FormLabel className="text-base font-medium">{t('summarize.orPaste')}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Paste the full text of the judgment here..."
+                            placeholder={t('summarize.placeholder')}
                             className="flex-1 min-h-[200px] font-mono text-xs resize-none mt-2 bg-background"
                             {...field}
                           />
@@ -372,7 +401,7 @@ export default function DocumentSummarizationPage() {
               
               <Button type="submit" size="lg" disabled={isLoading || isParsing} className="w-full text-lg font-semibold h-12 shadow-md transition-all hover:scale-[1.01]">
                 {(isLoading || isParsing) && <CircleDashed className="mr-2 h-5 w-5 animate-spin" />}
-                {isLoading ? 'Analyzing Document...' : 'Generate Case Analysis 🚀'}
+                {isLoading ? t('summarize.analyzing') : t('summarize.analyzeBtn')}
               </Button>
             </form>
           </Form>

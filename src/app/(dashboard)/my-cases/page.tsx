@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Briefcase, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/hooks/use-language';
 
 interface Case {
   id: string;
@@ -27,6 +28,7 @@ export default function MyCasesPage() {
   const { user, loading: userLoading } = useUser();
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchCases() {
@@ -93,12 +95,12 @@ export default function MyCasesPage() {
             <div className="mx-auto bg-muted p-3 rounded-full w-fit">
               <Briefcase className="w-8 h-8 text-muted-foreground" />
             </div>
-            <CardTitle className="font-headline mt-4">No Cases Found</CardTitle>
-            <CardDescription>You have not started or been assigned any cases yet.</CardDescription>
+            <CardTitle className="font-headline mt-4">{t('myCasesPage.noCases')}</CardTitle>
+            <CardDescription>{t('myCasesPage.noCasesDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
-                <Link href="/ai-judge">Start a Case Analysis</Link>
+                <Link href="/ai-judge">{t('myCasesPage.startAnalysis')}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -110,15 +112,15 @@ export default function MyCasesPage() {
                 <div>
                   <div className="flex items-center gap-3">
                     <CardTitle className="font-headline text-lg">
-                      Case with {user?.uid === caseItem.userId ? caseItem.lawyerDisplayName : caseItem.userDisplayName}
+                      {t('myCasesPage.caseWith', { name: user?.uid === caseItem.userId ? caseItem.lawyerDisplayName : caseItem.userDisplayName })}
                     </CardTitle>
-                    <Badge variant={caseItem.status === 'active' ? 'default' : caseItem.status === 'pending' ? 'secondary' : 'outline'}>{caseItem.status}</Badge>
+                    <Badge variant={caseItem.status === 'active' ? 'default' : caseItem.status === 'pending' ? 'secondary' : 'outline'}>{t(`myCasesPage.status.${caseItem.status}`)}</Badge>
                   </div>
                   <CardDescription className="mt-2 line-clamp-2">{caseItem.description}</CardDescription>
                 </div>
                 <Button asChild variant="outline" size="sm" className="mt-2 md:mt-0 ml-auto">
                     <Link href={`/my-cases/${caseItem.id}`}>
-                        View Case <ArrowRight className="ml-2 h-4 w-4" />
+                        {t('myCasesPage.viewCase')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
               </CardHeader>

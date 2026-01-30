@@ -35,6 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUser } from '@/firebase/auth/use-user';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TRANSLATIONS } from '@/lib/translations';
 
 // Combined schema for both user and lawyer, with lawyer fields being optional.
 const profileSchema = z.object({
@@ -54,17 +55,18 @@ export default function ProfilePage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
   const { user, loading: userLoading } = useUser();
   const { data: userProfile, loading: profileLoading } = useDoc<any>(user ? `users/${user.uid}` : '');
 
   const lawyerTypes = [
-    { id: "corporate", label: t('register.lawyerTypes.corporate') },
-    { id: "criminal", label: t('register.lawyerTypes.criminal') },
-    { id: "family", label: t('register.lawyerTypes.family') },
-    { id: "immigration", label: t('register.lawyerTypes.immigration') },
-    { id: "civil", label: t('register.lawyerTypes.civil') },
-    { id: "ip", label: t('register.lawyerTypes.ip') },
+    { id: "corporate", label: t.register?.lawyerTypes?.corporate ?? 'Corporate' },
+    { id: "criminal", label: t.register?.lawyerTypes?.criminal ?? 'Criminal' },
+    { id: "family", label: t.register?.lawyerTypes?.family ?? 'Family' },
+    { id: "immigration", label: t.register?.lawyerTypes?.immigration ?? 'Immigration' },
+    { id: "civil", label: t.register?.lawyerTypes?.civil ?? 'Civil' },
+    { id: "ip", label: t.register?.lawyerTypes?.ip ?? 'Intellectual Property' },
   ];
 
   const form = useForm<z.infer<typeof profileSchema>>({
@@ -164,9 +166,9 @@ export default function ProfilePage() {
               name="displayName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('register.fullNameLabel')}</FormLabel>
+                  <FormLabel>{t.register?.fullNameLabel ?? 'Full Name'}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('register.fullNamePlaceholder')} {...field} />
+                    <Input placeholder={t.register?.fullNamePlaceholder ?? 'John Doe'} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -174,7 +176,7 @@ export default function ProfilePage() {
             />
             
             <FormItem>
-              <FormLabel>{t('register.emailLabel')}</FormLabel>
+              <FormLabel>{t.register?.emailLabel ?? 'Email'}</FormLabel>
               <FormControl>
                 <Input placeholder="name@example.com" value={userProfile.email} disabled />
               </FormControl>
@@ -188,7 +190,7 @@ export default function ProfilePage() {
               name="contactNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('register.contactNumberLabel')}</FormLabel>
+                  <FormLabel>{t.register?.contactNumberLabel ?? 'Contact Number'}</FormLabel>
                   <FormControl>
                     <Input placeholder="+1 234 567 890" {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -201,11 +203,11 @@ export default function ProfilePage() {
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('register.locationLabel')}</FormLabel>
+                  <FormLabel>{t.register?.locationLabel ?? 'Location'}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={t('register.locationPlaceholder')} />
+                        <SelectValue placeholder={t.register?.locationPlaceholder ?? 'Select District'} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -228,9 +230,9 @@ export default function ProfilePage() {
                   name="specialization"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('register.specializationLabel')}</FormLabel>
+                      <FormLabel>{t.register?.specializationLabel ?? 'Specialization'}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('register.specializationPlaceholder')} {...field} value={field.value ?? ''} />
+                        <Input placeholder={t.register?.specializationPlaceholder ?? 'e.g. Criminal Law'} {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -241,7 +243,7 @@ export default function ProfilePage() {
                   name="experience"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('register.experienceLabel')}</FormLabel>
+                      <FormLabel>{t.register?.experienceLabel ?? 'Experience (Years)'}</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? 0} />
                       </FormControl>
@@ -254,7 +256,7 @@ export default function ProfilePage() {
                   name="education"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('register.educationLabel')}</FormLabel>
+                      <FormLabel>{t.register?.educationLabel ?? 'Education'}</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., J.D. from Harvard Law" {...field} value={field.value ?? ''}/>
                       </FormControl>
@@ -268,9 +270,9 @@ export default function ProfilePage() {
                   render={() => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel>{t('register.lawyerTypeLabel')}</FormLabel>
+                        <FormLabel>{t.register?.lawyerTypeLabel ?? 'Lawyer Type'}</FormLabel>
                         <FormDescription>
-                          {t('register.lawyerTypeDescription')}
+                          {t.register?.lawyerTypeDescription ?? 'Select the areas of law you practice.'}
                         </FormDescription>
                       </div>
                       <div className='grid grid-cols-2 gap-4'>

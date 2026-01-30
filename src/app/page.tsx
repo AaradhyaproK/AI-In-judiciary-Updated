@@ -70,6 +70,8 @@ import { useFirestore } from "@/firebase/provider";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { chatWithLandingBot } from '@/ai/flows/landing-chat';
+import { useLanguage } from '@/hooks/use-language';
+import { TRANSLATIONS } from '@/lib/translations';
 
 const NATIONAL_DATA = {
   summary: {
@@ -147,47 +149,35 @@ const LEGAL_NEWS = [
     "Government launches expanded tele-law service for rural areas."
 ];
 
-const RIGHTS_DATA_LANDING = [
+const RIGHTS_METADATA_LANDING = [
     {
         id: 'fr1',
-        title: 'Right to Equality',
-        description: 'Ensures no person is denied equality before the law or the equal protection of the laws within India.',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Article 14'
     },
     {
         id: 'w1',
-        title: 'Right to Zero FIR',
-        description: 'A woman can file an FIR at any police station, regardless of where the incident occurred, for certain offenses.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Section 154 CrPC'
     },
     {
         id: 'c2',
-        title: 'Protection from Child Labor',
-        description: 'Prohibits the employment of children below 14 years in hazardous jobs and regulates working conditions for adolescents.',
-        category: 'Children',
+        categoryKey: 'Children',
         article: 'Article 24'
     },
     {
         id: 'a2',
-        title: 'Right before Magistrate',
-        description: 'An arrested person must be produced before a magistrate within 24 hours of arrest, excluding travel time.',
-        category: 'Arrested Persons',
+        categoryKey: 'Arrested Persons',
         article: 'Article 22(2)'
     },
     {
         id: 'co3',
-        title: 'Right to Seek Redressal',
-        description: 'Consumers have the right to seek compensation against unfair trade practices or exploitation.',
-        category: 'Consumers',
+        categoryKey: 'Consumers',
         article: 'Consumer Protection Act'
     },
     {
         id: 't1',
-        title: 'Right against Unfair Eviction',
-        description: 'Landlords cannot evict tenants without proper notice and valid legal grounds as per the rent control act.',
-        category: 'Tenants',
+        categoryKey: 'Tenants',
         article: 'Rent Control Act'
     }
 ];
@@ -196,7 +186,24 @@ export default function LandingPage() {
   const data = NATIONAL_DATA;
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { language, setLanguage, t: translate } = useLanguage();
   
+  const getLangCode = (lang: string) => {
+    if (lang === 'Hindi' || lang === 'hi') return 'hi';
+    if (lang === 'Marathi' || lang === 'mr') return 'mr';
+    return 'en';
+  };
+  
+  const currentLang = getLangCode(language);
+  const t = (TRANSLATIONS as any)[currentLang] || TRANSLATIONS.en;
+  
+  const rightsDataLanding = RIGHTS_METADATA_LANDING.map(item => ({
+      ...item,
+      title: translate(`knowYourRightsPage.rights.${item.id}.title`),
+      description: translate(`knowYourRightsPage.rights.${item.id}.description`),
+      category: translate(`knowYourRightsPage.categories.${item.categoryKey}`)
+  }));
+
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', content: string}[]>([
       { role: 'model', content: 'Namaste! I am NyayaAI Assistant. Ask me about your rights, our features, or legal statistics.' }
@@ -303,19 +310,29 @@ export default function LandingPage() {
           <span className="ml-3 text-2xl font-bold text-slate-900 tracking-tight">NyayaAI</span>
         </Link>
         <nav className="ml-auto flex gap-8 hidden lg:flex items-center">
-          {['Features', 'AI Tools', 'Statistics', 'Testimonials', 'Know Your Rights'].map((item) => (
-            <Link key={item} className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}>
-              {item}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#3F51B5] transition-all group-hover:w-full"></span>
-            </Link>
-          ))}
+          <Link className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href="#features">{t.nav.features}</Link>
+          <Link className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href="#ai-tools">{t.nav.aiTools}</Link>
+          <Link className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href="#statistics">{t.nav.stats}</Link>
+          <Link className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href="#testimonials">{t.nav.testimonials}</Link>
+          <Link className="text-sm font-medium text-slate-600 hover:text-[#3F51B5] transition-colors relative group" href="#know-your-rights">{t.nav.knowRights}</Link>
         </nav>
         <div className="ml-8 flex gap-4">
+            <Select value={currentLang} onValueChange={setLanguage}>
+                <SelectTrigger className="w-[110px] bg-transparent border-slate-200">
+                    <Languages className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Language" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="hi">Hindi</SelectItem>
+                    <SelectItem value="mr">Marathi</SelectItem>
+                </SelectContent>
+            </Select>
             <Link href="/login">
-                <Button variant="ghost" className="text-slate-600 hover:text-[#3F51B5] hover:bg-blue-50">Login</Button>
+                <Button variant="ghost" className="text-slate-600 hover:text-[#3F51B5] hover:bg-blue-50">{t.nav.login}</Button>
             </Link>
             <Link href="/register">
-                <Button className="bg-[#3F51B5] hover:bg-[#303F9F] text-white shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">Get Started</Button>
+                <Button className="bg-[#3F51B5] hover:bg-[#303F9F] text-white shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">{t.nav.getStarted}</Button>
             </Link>
         </div>
       </header>
@@ -334,24 +351,24 @@ export default function LandingPage() {
                         <div className="space-y-4">
                             <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md shadow-sm">
                                 <span className="flex h-2.5 w-2.5 rounded-full bg-[#4CAF50] mr-2 animate-pulse shadow-[0_0_10px_#4CAF50]"></span>
-                                AI-Powered Legal Assistance 2.0
+                                {t.hero.badge}
                             </div>
                             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl xl:text-7xl leading-tight">
-                                Smart Justice Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-emerald-300">Artificial Intelligence</span>
+                                {t.hero.title}
                             </h1>
                             <p className="max-w-[600px] text-blue-100 md:text-xl leading-relaxed">
-                                Making legal help faster, simpler, and accessible for everyone.
+                                {t.hero.subtitle}
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link href="/register">
                                 <Button size="lg" className="bg-[#4CAF50] hover:bg-[#43A047] text-white border-none px-8 font-bold text-lg h-14 rounded-full shadow-xl shadow-green-900/30 transition-all hover:scale-105 hover:shadow-2xl w-full sm:w-auto">
-                                    Get Legal Help <ArrowRight className="ml-2 h-5 w-5" />
+                                    {t.hero.ctaPrimary} <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </Link>
                             <Link href="/login">
                                 <Button variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 h-14 rounded-full px-8 font-semibold w-full sm:w-auto hover:border-white/40 transition-all">
-                                    Login as User / Lawyer / Judge
+                                    {t.hero.ctaSecondary}
                                 </Button>
                             </Link>
                         </div>
@@ -375,7 +392,7 @@ export default function LandingPage() {
                     {IMPACT_STATS.map((stat, index) => (
                         <div key={index} className="space-y-2 animate-in zoom-in duration-500 delay-100">
                             <div className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#3F51B5] to-[#303F9F]">{stat.value}</div>
-                            <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{stat.label}</div>
+                            <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{Object.values(t.stats)[index]}</div>
                         </div>
                     ))}
                 </div>
@@ -386,19 +403,19 @@ export default function LandingPage() {
         <section id="features" className="w-full py-24 bg-white">
             <div className="container px-4 md:px-6">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Comprehensive Legal Features</h2>
-                    <p className="text-lg text-slate-600">Access a wide range of AI-powered tools designed to simplify legal processes for citizens, lawyers, and judges.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">{t.features.title}</h2>
+                    <p className="text-lg text-slate-600">{t.features.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <FeatureCard icon={<Megaphone />} title="PIL Assistance System" description="Help users file Public Interest Litigations with step-by-step guidance" color="bg-red-500" delay={0} />
-                    <FeatureCard icon={<ScrollText />} title="RTI System Support" description="Guide citizens in filing RTI applications effectively" color="bg-orange-500" delay={100} />
-                    <FeatureCard icon={<Gavel />} title="AI as Judge (Research Tool)" description="AI-based legal reasoning & suggestions for complex cases" color="bg-blue-600" delay={200} />
-                    <FeatureCard icon={<BarChart3 />} title="Court Statistics Dashboard" description="Case data visualization, trends, and analytics" color="bg-purple-500" delay={300} />
-                    <FeatureCard icon={<Users />} title="Lawyer Recommendation" description="Find lawyers based on case type and expertise" color="bg-indigo-500" delay={400} />
-                    <FeatureCard icon={<Languages />} title="Multilingual Support" description="Available in Marathi, Hindi, and English" color="bg-green-500" delay={500} />
-                    <FeatureCard icon={<Mic />} title="Voice-Based Input & Output" description="Speak your legal problem for hands-free access" color="bg-pink-500" delay={600} />
-                    <FeatureCard icon={<MessageSquare />} title="AI Legal Chatbot" description="Ask legal questions and get instant responses" color="bg-teal-500" delay={700} />
-                    <FeatureCard icon={<FileText />} title="Document Understanding" description="AI summaries of long legal judgments" color="bg-slate-600" delay={800} />
+                    <FeatureCard icon={<Megaphone />} title={t.features.cards.pil.title} description={t.features.cards.pil.desc} color="bg-red-500" delay={0} />
+                    <FeatureCard icon={<ScrollText />} title={t.features.cards.rti.title} description={t.features.cards.rti.desc} color="bg-orange-500" delay={100} />
+                    <FeatureCard icon={<Gavel />} title={t.features.cards.aiJudge.title} description={t.features.cards.aiJudge.desc} color="bg-blue-600" delay={200} />
+                    <FeatureCard icon={<BarChart3 />} title={t.features.cards.dashboard.title} description={t.features.cards.dashboard.desc} color="bg-purple-500" delay={300} />
+                    <FeatureCard icon={<Users />} title={t.features.cards.lawyer.title} description={t.features.cards.lawyer.desc} color="bg-indigo-500" delay={400} />
+                    <FeatureCard icon={<Languages />} title={t.features.cards.multilingual.title} description={t.features.cards.multilingual.desc} color="bg-green-500" delay={500} />
+                    <FeatureCard icon={<Mic />} title={t.features.cards.voice.title} description={t.features.cards.voice.desc} color="bg-pink-500" delay={600} />
+                    <FeatureCard icon={<MessageSquare />} title={t.features.cards.chatbot.title} description={t.features.cards.chatbot.desc} color="bg-teal-500" delay={700} />
+                    <FeatureCard icon={<FileText />} title={t.features.cards.docs.title} description={t.features.cards.docs.desc} color="bg-slate-600" delay={800} />
                 </div>
             </div>
         </section>
@@ -407,16 +424,16 @@ export default function LandingPage() {
         <section id="ai-tools" className="w-full py-24 bg-slate-50">
             <div className="container px-4 md:px-6">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Powerful AI Tools for the Legal System</h2>
-                    <p className="text-lg text-slate-600">Advanced artificial intelligence capabilities to transform how legal work is done.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">{t.aiTools.title}</h2>
+                    <p className="text-lg text-slate-600">{t.aiTools.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <ToolCard icon={<Scale />} title="Judgment Recommendation" description="AI suggests relevant past judgments for your case" delay={0} />
-                    <ToolCard icon={<Search />} title="Case Fact Extraction" description="Automatically extract key facts from case documents" delay={100} />
-                    <ToolCard icon={<Calendar />} title="Case Management & Scheduling" description="Organize hearings and track case progress" delay={200} />
-                    <ToolCard icon={<Unlock />} title="Bail Prediction Assistance" description="AI-assisted bail outcome predictions" delay={300} />
-                    <ToolCard icon={<GraduationCap />} title="Legal Case Study Helper" description="Learning tool for law students" delay={400} />
-                    <ToolCard icon={<BookOpen />} title="Know Your Rights" description="Citizen legal awareness and education" delay={500} />
+                    <ToolCard icon={<Scale />} title={t.aiTools.cards.judgment.title} description={t.aiTools.cards.judgment.desc} delay={0} />
+                    <ToolCard icon={<Search />} title={t.aiTools.cards.facts.title} description={t.aiTools.cards.facts.desc} delay={100} />
+                    <ToolCard icon={<Calendar />} title={t.aiTools.cards.management.title} description={t.aiTools.cards.management.desc} delay={200} />
+                    <ToolCard icon={<Unlock />} title={t.aiTools.cards.bail.title} description={t.aiTools.cards.bail.desc} delay={300} />
+                    <ToolCard icon={<GraduationCap />} title={t.aiTools.cards.study.title} description={t.aiTools.cards.study.desc} delay={400} />
+                    <ToolCard icon={<BookOpen />} title={t.aiTools.cards.rights.title} description={t.aiTools.cards.rights.desc} delay={500} />
                 </div>
             </div>
         </section>
@@ -425,35 +442,35 @@ export default function LandingPage() {
         <section id="statistics" className="w-full py-24 bg-slate-50">
             <div className="container px-4 md:px-6">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Court Statistics Dashboard</h2>
-                    <p className="text-lg text-slate-600">Real-time analysis of judicial data across the country.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">{t.statistics.title}</h2>
+                    <p className="text-lg text-slate-600">{t.statistics.subtitle}</p>
                 </div>
 
                 {/* Top Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <SummaryCard 
-                    title="Total Pending Cases" 
+                    title={t.statistics.cards.pending} 
                     value={data.summary.total} 
                     icon={<Scale className="w-5 h-5 text-white" />} 
                     color="bg-primary"
                     subtext="Across all courts"
                     />
                     <SummaryCard 
-                    title="Civil Cases" 
+                    title={t.statistics.cards.civil} 
                     value={data.summary.civil} 
                     icon={<FileText className="w-5 h-5 text-white" />} 
                     color="bg-blue-500"
                     subtext={`${((data.summary.civil / data.summary.total) * 100).toFixed(1)}% of Total`}
                     />
                     <SummaryCard 
-                    title="Criminal Cases" 
+                    title={t.statistics.cards.criminal} 
                     value={data.summary.criminal} 
                     icon={<Gavel className="w-5 h-5 text-white" />} 
                     color="bg-red-500"
                     subtext={`${((data.summary.criminal / data.summary.total) * 100).toFixed(1)}% of Total`}
                     />
                     <SummaryCard 
-                    title="Pre-Litigation Cases" 
+                    title={t.statistics.cards.preLitigation} 
                     value={data.summary.preLitigation} 
                     icon={<Clock className="w-5 h-5 text-white" />} 
                     color="bg-orange-500"
@@ -564,8 +581,8 @@ export default function LandingPage() {
              </div>
              <div className="container px-4 md:px-6 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Trusted by Thousands</h2>
-                    <p className="text-lg text-slate-600">See what citizens and legal professionals are saying about NyayaAI.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">{t.testimonials.title}</h2>
+                    <p className="text-lg text-slate-600">{t.testimonials.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {TESTIMONIALS.map((testimonial, i) => (
@@ -593,15 +610,14 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div className="space-y-6">
-                        <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Why Choose NyayaAI?</h2>
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">{t.whyChoose.title}</h2>
                         <p className="text-blue-100 text-lg leading-relaxed">
-                            We combine cutting-edge technology with deep legal expertise to provide a platform that is secure, accurate, and easy to use.
+                            {t.whyChoose.subtitle}
                         </p>
                         <ul className="space-y-4">
-                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>94% Accuracy in Case Predictions</span></li>
-                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>Secure & Confidential Data Handling</span></li>
-                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>24/7 Availability in 3+ Languages</span></li>
-                            <li className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>Verified Network of 50k+ Lawyers</span></li>
+                            {t.whyChoose.points.map((point, i) => (
+                                <li key={i} className="flex items-center gap-3"><div className="bg-[#4CAF50] p-1 rounded-full"><Check className="w-4 h-4 text-white" /></div> <span>{point}</span></li>
+                            ))}
                         </ul>
                     </div>
                     <div className="relative">
@@ -623,13 +639,13 @@ export default function LandingPage() {
         <section id="who-can-use" className="w-full py-24 bg-white">
             <div className="container px-4 md:px-6">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Who Can Use This Platform</h2>
-                    <p className="text-slate-600 mt-4">NyayaAI is designed to serve everyone in the justice system.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{t.whoCanUse.title}</h2>
+                    <p className="text-slate-600 mt-4">{t.whoCanUse.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <PersonaCard icon={<Users />} title="Citizens" description="Get legal guidance, understand your rights, file PILs and RTIs with ease." />
-                    <PersonaCard icon={<Briefcase />} title="Lawyers" description="Access research tools, case recommendations, and client management features." />
-                    <PersonaCard icon={<Gavel />} title="Judges" description="AI-based document analysis, case scheduling, and decision support tools." />
+                    <PersonaCard icon={<Users />} title={t.whoCanUse.cards.citizens.title} description={t.whoCanUse.cards.citizens.desc} />
+                    <PersonaCard icon={<Briefcase />} title={t.whoCanUse.cards.lawyers.title} description={t.whoCanUse.cards.lawyers.desc} />
+                    <PersonaCard icon={<Gavel />} title={t.whoCanUse.cards.judges.title} description={t.whoCanUse.cards.judges.desc} />
                 </div>
             </div>
         </section>
@@ -638,18 +654,18 @@ export default function LandingPage() {
         <section id="know-your-rights" className="w-full py-24 bg-slate-50">
             <div className="container px-4 md:px-6">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">Know Your Rights</h2>
-                    <p className="text-lg text-slate-600">An informed citizen is an empowered citizen. Here are some of the fundamental and legal rights you should be aware of.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">{t.rights.title}</h2>
+                    <p className="text-lg text-slate-600">{t.rights.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {RIGHTS_DATA_LANDING.map(right => (
+                    {rightsDataLanding.map(right => (
                         <RightCard key={right.id} {...right} />
                     ))}
                 </div>
                 <div className="text-center mt-16">
                     <Link href="/know-your-rights">
                         <Button size="lg" variant="outline" className="border-[#3F51B5] text-[#3F51B5] hover:bg-[#3F51B5]/10">
-                            Explore All Rights <ArrowRight className="ml-2 h-4 w-4" />
+                            {t.rights.explore} <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </Link>
                 </div>
@@ -662,28 +678,28 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">Accessibility & Inclusion</h2>
-                        <p className="text-blue-100 text-lg mb-8">We believe justice should be accessible to everyone, regardless of language or ability.</p>
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">{t.accessibility.title}</h2>
+                        <p className="text-blue-100 text-lg mb-8">{t.accessibility.subtitle}</p>
                         <div className="space-y-6">
                             <div className="flex gap-4">
                                 <div className="bg-white/10 p-3 rounded-lg h-fit"><Languages className="w-6 h-6 text-[#4CAF50]" /></div>
                                 <div>
-                                    <h3 className="font-bold text-xl">Multilingual Interface</h3>
-                                    <p className="text-blue-200">Available in Marathi, Hindi, and English for wider reach.</p>
+                                    <h3 className="font-bold text-xl">{t.accessibility.features.multilingual.title}</h3>
+                                    <p className="text-blue-200">{t.accessibility.features.multilingual.desc}</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <div className="bg-white/10 p-3 rounded-lg h-fit"><Mic className="w-6 h-6 text-[#4CAF50]" /></div>
                                 <div>
-                                    <h3 className="font-bold text-xl">Voice Interaction</h3>
-                                    <p className="text-blue-200">Speech-to-text and text-to-speech for hands-free access.</p>
+                                    <h3 className="font-bold text-xl">{t.accessibility.features.voice.title}</h3>
+                                    <p className="text-blue-200">{t.accessibility.features.voice.desc}</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <div className="bg-white/10 p-3 rounded-lg h-fit"><BookOpen className="w-6 h-6 text-[#4CAF50]" /></div>
                                 <div>
-                                    <h3 className="font-bold text-xl">Simple Legal Explanations</h3>
-                                    <p className="text-blue-200">Complex legal terms explained in plain language for everyone.</p>
+                                    <h3 className="font-bold text-xl">{t.accessibility.features.simple.title}</h3>
+                                    <p className="text-blue-200">{t.accessibility.features.simple.desc}</p>
                                 </div>
                             </div>
                         </div>
@@ -731,19 +747,19 @@ export default function LandingPage() {
                 <div className="absolute bottom-0 right-0 w-64 h-64 bg-green-500/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
                 
                 <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-                    <h2 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">Justice Should Be Accessible to Everyone</h2>
+                    <h2 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">{t.cta.title}</h2>
                     <p className="text-slate-300 text-lg md:text-xl">
-                        Join thousands of citizens, lawyers, and judges who are using AI to make the legal system more efficient and accessible.
+                        {t.cta.subtitle}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href="/register">
                             <Button size="lg" className="bg-[#4CAF50] hover:bg-[#43A047] text-white px-8 h-14 rounded-full text-lg font-semibold w-full sm:w-auto shadow-lg shadow-green-900/30 hover:shadow-green-900/50 transition-all hover:scale-105">
-                                Start Free Legal Guidance
+                                {t.cta.btnPrimary}
                             </Button>
                         </Link>
                         <Link href="#ai-tools">
                             <Button variant="outline" size="lg" className="bg-transparent border-slate-600 text-white hover:bg-white/10 px-8 h-14 rounded-full text-lg font-semibold w-full sm:w-auto hover:border-white/50 transition-all">
-                                Explore AI Tools
+                                {t.cta.btnSecondary}
                             </Button>
                         </Link>
                     </div>
@@ -757,8 +773,8 @@ export default function LandingPage() {
       <section id="feedback" className="w-full py-24 bg-slate-50 border-t border-slate-200">
           <div className="container px-4 md:px-6">
             <div className="max-w-2xl mx-auto text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">We Value Your Feedback</h2>
-              <p className="text-lg text-slate-600 mt-4">Help us improve NyayaAI by sharing your thoughts and suggestions.</p>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{t.feedback.title}</h2>
+              <p className="text-lg text-slate-600 mt-4">{t.feedback.subtitle}</p>
             </div>
             <Card className="max-w-3xl mx-auto shadow-lg border-t-4 border-t-[#3F51B5]">
               <CardContent className="p-8">
@@ -766,15 +782,15 @@ export default function LandingPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label htmlFor="name" className="text-sm font-medium text-slate-700">Name</label>
-                      <Input id="name" placeholder="Your Full Name" value={feedbackForm.name} onChange={(e) => setFeedbackForm({...feedbackForm, name: e.target.value})} required className="bg-slate-50" />
+                      <Input id="name" placeholder={t.feedback.form.name} value={feedbackForm.name} onChange={(e) => setFeedbackForm({...feedbackForm, name: e.target.value})} required className="bg-slate-50" />
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>
-                      <Input id="email" type="email" placeholder="your@email.com" value={feedbackForm.email} onChange={(e) => setFeedbackForm({...feedbackForm, email: e.target.value})} required className="bg-slate-50" />
+                      <Input id="email" type="email" placeholder={t.feedback.form.email} value={feedbackForm.email} onChange={(e) => setFeedbackForm({...feedbackForm, email: e.target.value})} required className="bg-slate-50" />
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="phone" className="text-sm font-medium text-slate-700">Phone Number</label>
-                      <Input id="phone" type="tel" placeholder="+91 XXXXX XXXXX" value={feedbackForm.phone} onChange={(e) => setFeedbackForm({...feedbackForm, phone: e.target.value})} className="bg-slate-50" />
+                      <Input id="phone" type="tel" placeholder={t.feedback.form.phone} value={feedbackForm.phone} onChange={(e) => setFeedbackForm({...feedbackForm, phone: e.target.value})} className="bg-slate-50" />
                     </div>
                     <div className="space-y-2">
                       <label htmlFor="role" className="text-sm font-medium text-slate-700">I am a...</label>
@@ -818,17 +834,17 @@ export default function LandingPage() {
 
                   <div className="space-y-2">
                     <label htmlFor="subject" className="text-sm font-medium text-slate-700">Subject</label>
-                    <Input id="subject" placeholder="Brief subject of your feedback" value={feedbackForm.subject} onChange={(e) => setFeedbackForm({...feedbackForm, subject: e.target.value})} required className="bg-slate-50" />
+                    <Input id="subject" placeholder={t.feedback.form.subject} value={feedbackForm.subject} onChange={(e) => setFeedbackForm({...feedbackForm, subject: e.target.value})} required className="bg-slate-50" />
                   </div>
 
                   <div className="space-y-2">
                     <label htmlFor="message" className="text-sm font-medium text-slate-700">Detailed Message</label>
-                    <Textarea id="message" placeholder="Please provide detailed information..." rows={5} value={feedbackForm.message} onChange={(e) => setFeedbackForm({...feedbackForm, message: e.target.value})} required className="bg-slate-50 resize-none" />
+                    <Textarea id="message" placeholder={t.feedback.form.message} rows={5} value={feedbackForm.message} onChange={(e) => setFeedbackForm({...feedbackForm, message: e.target.value})} required className="bg-slate-50 resize-none" />
                   </div>
 
                   <Button type="submit" className="w-full bg-[#3F51B5] hover:bg-[#303F9F] h-11 text-base" disabled={isSubmittingFeedback}>
                     {isSubmittingFeedback ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                    Submit Feedback
+                    {t.feedback.form.submit}
                   </Button>
                 </form>
               </CardContent>
@@ -854,7 +870,7 @@ export default function LandingPage() {
                     </div>
                 </div>
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-4">About NyayaAI</h4>
+                    <h4 className="font-bold text-slate-900 mb-4">{t.footer.about}</h4>
                     <ul className="space-y-2 text-sm text-slate-600">
                         <li><Link href="#" className="hover:text-[#3F51B5]">Our Mission</Link></li>
                         <li><Link href="#" className="hover:text-[#3F51B5]">How It Works</Link></li>
@@ -863,7 +879,7 @@ export default function LandingPage() {
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-4">Legal Information</h4>
+                    <h4 className="font-bold text-slate-900 mb-4">{t.footer.legal}</h4>
                     <ul className="space-y-2 text-sm text-slate-600">
                         <li><Link href="#" className="hover:text-[#3F51B5]">Privacy Policy</Link></li>
                         <li><Link href="#" className="hover:text-[#3F51B5]">Terms & Conditions</Link></li>
@@ -872,7 +888,7 @@ export default function LandingPage() {
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-4">Contact Support</h4>
+                    <h4 className="font-bold text-slate-900 mb-4">{t.footer.contact}</h4>
                     <ul className="space-y-2 text-sm text-slate-600">
                         <li>support@nyayaai.gov.in</li>
                         <li>1800-XXX-XXXX (Toll Free)</li>
@@ -884,9 +900,9 @@ export default function LandingPage() {
             <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-xs text-slate-500">© 2026 NyayaAI – AI in Judiciary System. All rights reserved.</p>
                 <div className="text-xs text-slate-500 text-center md:text-right">
-                    <span className="block md:inline">Developed by <a href="https://portfolioaaradhya.netlify.app/" target="_blank" rel="noopener noreferrer" className="font-medium text-slate-700 hover:text-[#3F51B5] underline decoration-slate-300 underline-offset-2 transition-all">Aaradhya Pathak</a></span>
+                    <span className="block md:inline">{t.footer.developedBy} </span>
                     <span className="hidden md:inline mx-2 text-slate-300">|</span>
-                    <span className="block md:inline mt-1 md:mt-0">Sanket Jadhav • Yash Jonshale • Prachi Gaykwad • Sakshi Aagle</span>
+                    <span className="block md:inline mt-1 md:mt-0"><a href="https://sanketjadhav.lovable.app/" target="_blank" rel="noopener noreferrer" className="font-medium text-slate-700 hover:text-[#3F51B5] underline decoration-slate-300 underline-offset-2 transition-all">Sanket Jadhav</a> • Yash Jonshale • Prachi Gaykwad • Sakshi Aagle</span>
                 </div>
             </div>
         </div>

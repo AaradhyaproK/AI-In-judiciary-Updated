@@ -6,275 +6,227 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, BookOpen, GraduationCap, Baby, User, Briefcase, ShoppingCart, ShieldAlert, Info, Home, HeartPulse, Scale } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
 // Data
-const RIGHTS_DATA = [
+const RIGHTS_METADATA = [
     // Fundamental Rights
     {
         id: 'fr1',
-        title: 'Right to Equality',
-        description: 'Includes Equality before law (Art 14), Prohibition of discrimination (Art 15), Equality of opportunity (Art 16), Abolition of untouchability (Art 17), and Abolition of titles (Art 18).',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Articles 14–18'
     },
     {
         id: 'fr2',
-        title: 'Right to Freedom',
-        description: 'Includes six freedoms: Speech and expression, Assembly, Association, Movement, Residence, and Profession (Art 19). Also covers protection in conviction (Art 20), Life & Liberty (Art 21), Right to Education (Art 21A), and protection against arrest (Art 22).',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Articles 19–22'
     },
     {
         id: 'fr3',
-        title: 'Right against Exploitation',
-        description: 'Prohibition of human trafficking and forced labor (Art 23), and prohibition of child labor in hazardous jobs (Art 24).',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Articles 23–24'
     },
     {
         id: 'fr4',
-        title: 'Right to Freedom of Religion',
-        description: 'Freedom of conscience and free profession, practice, and propagation of religion (Art 25), freedom to manage religious affairs (Art 26), freedom from taxes for religion (Art 27), and freedom from religious instruction (Art 28).',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Articles 25–28'
     },
     {
         id: 'fr5',
-        title: 'Cultural and Educational Rights',
-        description: 'Protection of interests of minorities (Art 29) and right of minorities to establish and administer educational institutions (Art 30).',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Articles 29–30'
     },
     {
         id: 'fr6',
-        title: 'Right to Constitutional Remedies',
-        description: 'Right to move the Supreme Court for enforcement of Fundamental Rights (Art 32).',
-        category: 'Fundamental Rights',
+        categoryKey: 'Fundamental Rights',
         article: 'Article 32'
     },
     // Women
     {
         id: 'w1',
-        title: 'Right to Zero FIR',
-        description: 'A woman can file an FIR at any police station irrespective of the location of the incident.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Section 154 CrPC'
     },
     {
         id: 'w2',
-        title: 'Right to Privacy while Recording Statement',
-        description: 'A woman can record her statement with a female constable and in private.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Section 164 CrPC'
     },
     {
         id: 'w3',
-        title: 'No Arrest at Night',
-        description: 'Women cannot be arrested after sunset and before sunrise, except in exceptional circumstances with a magistrate\'s order.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Section 46(4) CrPC'
     },
     {
         id: 'w4',
-        title: 'Right to Equal Pay',
-        description: 'Women are entitled to equal pay for equal work as men.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Equal Remuneration Act'
     },
     {
         id: 'w5',
-        title: 'Maternity Benefits',
-        description: 'Right to paid maternity leave for 26 weeks for the first two children.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Maternity Benefit Act'
     },
     {
         id: 'w6',
-        title: 'Protection from Domestic Violence',
-        description: 'Right to protection against physical, mental, verbal, or economic abuse at home.',
-        category: 'Women',
+        categoryKey: 'Women',
         article: 'Domestic Violence Act, 2005'
     },
 
     // Children
     {
         id: 'c1',
-        title: 'Right to Free and Compulsory Education',
-        description: 'Every child between the ages of 6 and 14 has the right to free and compulsory education.',
-        category: 'Children',
+        categoryKey: 'Children',
         article: 'Article 21A, RTE Act'
     },
     {
         id: 'c2',
-        title: 'Protection from Child Labor',
-        description: 'Prohibition of employment of children below 14 years in factories, mines, or hazardous employment.',
-        category: 'Children',
+        categoryKey: 'Children',
         article: 'Article 24'
     },
     {
         id: 'c3',
-        title: 'Protection from Sexual Offenses (POCSO)',
-        description: 'Strict laws to protect children from sexual assault, harassment, and pornography.',
-        category: 'Children',
+        categoryKey: 'Children',
         article: 'POCSO Act, 2012'
     },
 
     // Students
     {
         id: 's1',
-        title: 'Right to Information',
-        description: 'Students can request copies of their answer sheets and other institutional information.',
-        category: 'Students',
+        categoryKey: 'Students',
         article: 'RTI Act, 2005'
     },
     {
         id: 's2',
-        title: 'Anti-Ragging Rights',
-        description: 'Ragging is a criminal offense. Students have the right to a ragging-free campus.',
-        category: 'Students',
+        categoryKey: 'Students',
         article: 'UGC Regulations'
     },
 
     // Employees
     {
         id: 'e1',
-        title: 'Right to Minimum Wages',
-        description: 'Every employee has the right to be paid at least the minimum wage fixed by the government.',
-        category: 'Employees',
+        categoryKey: 'Employees',
         article: 'Minimum Wages Act'
     },
     {
         id: 'e2',
-        title: 'Prevention of Sexual Harassment (POSH)',
-        description: 'Right to a safe workplace free from sexual harassment.',
-        category: 'Employees',
+        categoryKey: 'Employees',
         article: 'POSH Act, 2013'
     },
     {
         id: 'e3',
-        title: 'Right to Gratuity',
-        description: 'Employees working for 5+ years are entitled to gratuity upon termination/retirement.',
-        category: 'Employees',
+        categoryKey: 'Employees',
         article: 'Payment of Gratuity Act'
     },
 
     // Consumers
     {
         id: 'co1',
-        title: 'Right to Safety',
-        description: 'Protection against goods and services that are hazardous to life and property.',
-        category: 'Consumers',
+        categoryKey: 'Consumers',
         article: 'Consumer Protection Act'
     },
     {
         id: 'co2',
-        title: 'Right to Choose',
-        description: 'Right to be assured access to a variety of goods and services at competitive prices.',
-        category: 'Consumers',
+        categoryKey: 'Consumers',
         article: 'Consumer Protection Act'
     },
     {
         id: 'co3',
-        title: 'Right to Seek Redressal',
-        description: 'Right to seek compensation against unfair trade practices or exploitation.',
-        category: 'Consumers',
+        categoryKey: 'Consumers',
         article: 'Consumer Protection Act'
     },
 
     // Arrested Persons
     {
         id: 'a1',
-        title: 'Right to Know Grounds of Arrest',
-        description: 'Police must inform the arrested person of the grounds of arrest immediately.',
-        category: 'Arrested Persons',
+        categoryKey: 'Arrested Persons',
         article: 'Article 22(1), Section 50 CrPC'
     },
     {
         id: 'a2',
-        title: 'Right to be Produced before Magistrate',
-        description: 'An arrested person must be produced before a magistrate within 24 hours.',
-        category: 'Arrested Persons',
+        categoryKey: 'Arrested Persons',
         article: 'Article 22(2), Section 57 CrPC'
     },
     {
         id: 'a3',
-        title: 'Right to Legal Aid',
-        description: 'Right to consult a lawyer of choice and free legal aid if indigent.',
-        category: 'Arrested Persons',
+        categoryKey: 'Arrested Persons',
         article: 'Article 39A'
     },
 
     // Senior Citizens
     {
         id: 'sc1',
-        title: 'Right to Maintenance',
-        description: 'Senior citizens can claim maintenance from children/heirs if unable to maintain themselves.',
-        category: 'Senior Citizens',
+        categoryKey: 'Senior Citizens',
         article: 'Maintenance and Welfare of Parents and Senior Citizens Act'
     },
     {
         id: 'sc2',
-        title: 'Tax Benefits',
-        description: 'Higher exemption limits and tax benefits for senior citizens.',
-        category: 'Senior Citizens',
+        categoryKey: 'Senior Citizens',
         article: 'Income Tax Act'
     },
 
     // Men
     {
         id: 'm1',
-        title: 'Protection against False Dowry Cases',
-        description: 'Legal remedies available against misuse of Section 498A (Dowry Harassment).',
-        category: 'Men',
+        categoryKey: 'Men',
         article: 'Judicial Precedents'
     },
     {
         id: 'm2',
-        title: 'Right to Child Custody',
-        description: 'Fathers have equal rights to seek custody of their children.',
-        category: 'Men',
+        categoryKey: 'Men',
         article: 'Guardians and Wards Act'
     },
     
     // Tenants
     {
         id: 't1',
-        title: 'Right against Unfair Eviction',
-        description: 'Landlords cannot evict tenants without proper notice and valid legal grounds.',
-        category: 'Tenants',
+        categoryKey: 'Tenants',
         article: 'Rent Control Act'
     },
     {
         id: 't2',
-        title: 'Right to Essential Services',
-        description: 'Landlord cannot cut off water or electricity supply to force eviction.',
-        category: 'Tenants',
+        categoryKey: 'Tenants',
         article: 'Rent Control Act'
     }
 ];
 
-const CATEGORIES = [
-    { name: 'All', icon: BookOpen },
-    { name: 'Fundamental Rights', icon: Scale },
-    { name: 'Women', icon: User },
-    { name: 'Children', icon: Baby },
-    { name: 'Students', icon: GraduationCap },
-    { name: 'Employees', icon: Briefcase },
-    { name: 'Consumers', icon: ShoppingCart },
-    { name: 'Arrested Persons', icon: ShieldAlert },
-    { name: 'Senior Citizens', icon: HeartPulse },
-    { name: 'Men', icon: User },
-    { name: 'Tenants', icon: Home },
+const CATEGORIES_METADATA = [
+    { nameKey: 'All', icon: BookOpen },
+    { nameKey: 'Fundamental Rights', icon: Scale },
+    { nameKey: 'Women', icon: User },
+    { nameKey: 'Children', icon: Baby },
+    { nameKey: 'Students', icon: GraduationCap },
+    { nameKey: 'Employees', icon: Briefcase },
+    { nameKey: 'Consumers', icon: ShoppingCart },
+    { nameKey: 'Arrested Persons', icon: ShieldAlert },
+    { nameKey: 'Senior Citizens', icon: HeartPulse },
+    { nameKey: 'Men', icon: User },
+    { nameKey: 'Tenants', icon: Home },
 ];
 
 export default function KnowYourRightsPage() {
+    const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedCategoryKey, setSelectedCategoryKey] = useState('All');
 
-    const filteredRights = RIGHTS_DATA.filter(right => {
+    const rightsData = RIGHTS_METADATA.map(item => ({
+        ...item,
+        title: t(`knowYourRightsPage.rights.${item.id}.title`),
+        description: t(`knowYourRightsPage.rights.${item.id}.description`),
+        category: t(`knowYourRightsPage.categories.${item.categoryKey}`)
+    }));
+
+    const categories = CATEGORIES_METADATA.map(cat => ({
+        ...cat,
+        name: t(`knowYourRightsPage.categories.${cat.nameKey}`)
+    }));
+
+    const filteredRights = rightsData.filter(right => {
         const matchesSearch = right.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                               right.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || right.category === selectedCategory;
+        
+        const matchesCategory = selectedCategoryKey === 'All' || right.categoryKey === selectedCategoryKey;
+        
         return matchesSearch && matchesCategory;
     });
 
@@ -282,8 +234,8 @@ export default function KnowYourRightsPage() {
         <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-0 pb-12">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-primary">Know Your Rights</h1>
-                    <p className="text-muted-foreground">Empower yourself with knowledge about your legal rights and protections.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-primary">{t('knowYourRightsPage.title')}</h1>
+                    <p className="text-muted-foreground">{t('knowYourRightsPage.subtitle')}</p>
                 </div>
             </div>
 
@@ -292,7 +244,7 @@ export default function KnowYourRightsPage() {
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                        placeholder="Search for rights (e.g., arrest, education, maternity)..." 
+                        placeholder={t('knowYourRightsPage.searchPlaceholder')} 
                         className="pl-10 h-12 text-lg"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -300,13 +252,14 @@ export default function KnowYourRightsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map(cat => {
+                    {categories.map(cat => {
                         const Icon = cat.icon;
+                        const isSelected = selectedCategoryKey === (cat.nameKey === 'All' ? 'All' : cat.nameKey);
                         return (
                             <Button
-                                key={cat.name}
-                                variant={selectedCategory === cat.name ? "default" : "outline"}
-                                onClick={() => setSelectedCategory(cat.name)}
+                                key={cat.nameKey}
+                                variant={isSelected ? "default" : "outline"}
+                                onClick={() => setSelectedCategoryKey(cat.nameKey === 'All' ? 'All' : cat.nameKey)}
                                 className="gap-2 rounded-full"
                             >
                                 <Icon className="h-4 w-4" />
@@ -339,8 +292,8 @@ export default function KnowYourRightsPage() {
                 ) : (
                     <div className="col-span-full text-center py-12 text-muted-foreground">
                         <Info className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                        <p className="text-lg">No rights found matching your criteria.</p>
-                        <Button variant="link" onClick={() => {setSearchQuery(''); setSelectedCategory('All');}}>Clear filters</Button>
+                        <p className="text-lg">{t('knowYourRightsPage.noResults')}</p>
+                        <Button variant="link" onClick={() => {setSearchQuery(''); setSelectedCategoryKey('All');}}>{t('knowYourRightsPage.clearFilters')}</Button>
                     </div>
                 )}
             </div>

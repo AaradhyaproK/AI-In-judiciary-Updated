@@ -68,11 +68,11 @@ export function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push('/profile')}>
             <UserIcon className="mr-2 h-4 w-4" />
-            <span>{t('userNav.profile')}</span>
+            <span>{t.userNav?.profile ?? 'Profile'}</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
-            <span>{t('userNav.logOut')}</span>
+            <span>{t.userNav?.logOut ?? 'Log out'}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

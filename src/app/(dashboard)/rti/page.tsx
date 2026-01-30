@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CircleDashed, Download, Eraser, FileText } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
 const rtiSchema = z.object({
     department: z.string().min(2, "Department/Public Authority name is required"),
@@ -43,6 +44,7 @@ export default function RtiPage() {
     const sigPadRef = useRef<SignaturePad>(null);
     const [pdfData, setPdfData] = useState<RtiFormValues | null>(null);
     const pdfTemplateRef = useRef<HTMLDivElement>(null);
+    const { t } = useLanguage();
 
     const form = useForm<RtiFormValues>({
         resolver: zodResolver(rtiSchema),
@@ -65,46 +67,53 @@ export default function RtiPage() {
         sigPadRef.current?.clear();
     };
 
-    const generatePdf = async (values: RtiFormValues) => {
-        setIsGenerating(true);
-        setPdfData(values);
+    useEffect(() => {
+        if (pdfData && pdfTemplateRef.current) {
+            const generate = async () => {
+                try {
+                    const canvas = await html2canvas(pdfTemplateRef.current, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        windowWidth: 800
+                    });
 
-        // Allow time for the PDF data to render in the hidden template
-        await new Promise(resolve => setTimeout(resolve, 500));
+                    const imgData = canvas.toDataURL('image/jpeg', 0.6);
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    const pageHeight = pdf.internal.pageSize.getHeight();
 
-        if (!pdfTemplateRef.current) return;
+                    let heightLeft = pdfHeight;
+                    let position = 0;
 
-        try {
-            // Ensure html2canvas is available for jsPDF
-            if (typeof window !== 'undefined' && !(window as any).html2canvas) {
-                (window as any).html2canvas = html2canvas;
-            }
+                    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pageHeight;
 
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            
-            await pdf.html(pdfTemplateRef.current, {
-                callback: (doc) => {
-                    doc.save(`RTI-Application-${values.applicantName.replace(/\s+/g, '-')}.pdf`);
+                    while (heightLeft > 0) {
+                        position -= pageHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+                        heightLeft -= pageHeight;
+                    }
+
+                    pdf.save(`RTI-Application-${pdfData.applicantName.replace(/\s+/g, '-')}.pdf`);
+                } catch (error) {
+                    console.error("PDF Generation Error:", error);
+                } finally {
                     setPdfData(null);
                     setIsGenerating(false);
-                },
-                x: 25,
-                y: 15,
-                width: 160, // 210mm - 50mm margins (25 left, 25 right)
-                windowWidth: 800, // Fixed render width for consistency
-                margin: [15, 25, 15, 25], // Top, Left, Bottom, Right margins
-                autoPaging: 'text', // Avoid cutting text
-                html2canvas: {
-                    scale: 0.2, // Exact scale (160mm / 800px)
-                    useCORS: true,
-                    logging: false
                 }
-            });
-        } catch (error) {
-            console.error("PDF Generation Error:", error);
-            setPdfData(null);
-            setIsGenerating(false);
+            };
+            generate();
         }
+    }, [pdfData]);
+
+    const handleGeneratePdf = (values: RtiFormValues) => {
+        setIsGenerating(true);
+        setPdfData(values);
     };
 
     return (
@@ -115,95 +124,95 @@ export default function RtiPage() {
                         <div className="p-2 bg-primary/10 rounded-lg">
                             <FileText className="w-6 h-6 text-primary" />
                         </div>
-                        <CardTitle className="font-headline text-2xl">RTI Application Generator</CardTitle>
+                        <CardTitle className="font-headline text-2xl">{t('rti.title')}</CardTitle>
                     </div>
                     <CardDescription>
-                        Easily generate a formal Right to Information (Form A) application. Fill in the details below and download the ready-to-submit PDF.
+                        {t('rti.description')}
                     </CardDescription>
                 </CardHeader>
             </Card>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(generatePdf)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(handleGeneratePdf)} className="space-y-8">
                     
                     {/* 1. Public Authority & Applicant Details */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">1. Public Authority & Applicant Details</CardTitle>
+                            <CardTitle className="text-lg">{t('rti.sections.1')}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="department" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Name of Department / Public Authority</FormLabel><FormControl><Input placeholder="e.g. Ministry of Home Affairs, Municipal Corporation..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="applicantName" render={({ field }) => (<FormItem><FormLabel>Full Name of Applicant</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="fatherSpouseName" render={({ field }) => (<FormItem><FormLabel>Father's / Spouse's Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="permanentAddress" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Permanent Address</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="correspondenceAddress" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Correspondence Address</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="department" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('rti.fields.department')}</FormLabel><FormControl><Input placeholder={t('rti.fields.departmentPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="applicantName" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.applicantName')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="fatherSpouseName" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.fatherSpouseName')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="permanentAddress" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('rti.fields.permanentAddress')}</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="correspondenceAddress" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('rti.fields.correspondenceAddress')}</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </CardContent>
                     </Card>
 
                     {/* 2. Information Solicited */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">2. Particulars of Information Solicited</CardTitle>
+                            <CardTitle className="text-lg">{t('rti.sections.2')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="subjectMatter" render={({ field }) => (<FormItem><FormLabel>a) Subject Matter of Information (*)</FormLabel><FormControl><Input placeholder="Broad category e.g. Grant of License, Service Matters" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="period" render={({ field }) => (<FormItem><FormLabel>b) Period to which information relates (**)</FormLabel><FormControl><Input placeholder="e.g. Jan 2023 to Dec 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="details" render={({ field }) => (<FormItem><FormLabel>c) Specific Details of Information Required (***)</FormLabel><FormControl><Textarea rows={6} placeholder="Describe the specific documents or information you need..." {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="subjectMatter" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.subjectMatter')}</FormLabel><FormControl><Input placeholder={t('rti.fields.subjectMatterPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="period" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.period')}</FormLabel><FormControl><Input placeholder={t('rti.fields.periodPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="details" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.details')}</FormLabel><FormControl><Textarea rows={6} placeholder={t('rti.fields.detailsPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField control={form.control} name="deliveryMode" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>d) Mode of Delivery</FormLabel>
+                                        <FormLabel>{t('rti.fields.deliveryMode')}</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select Mode" /></SelectTrigger></FormControl>
-                                            <SelectContent><SelectItem value="Post">By Post</SelectItem><SelectItem value="In Person">In Person</SelectItem></SelectContent>
+                                            <FormControl><SelectTrigger><SelectValue placeholder={t('rti.fields.deliveryModeOptions.select')} /></SelectTrigger></FormControl>
+                                            <SelectContent><SelectItem value="Post">{t('rti.fields.deliveryModeOptions.post')}</SelectItem><SelectItem value="In Person">{t('rti.fields.deliveryModeOptions.inPerson')}</SelectItem></SelectContent>
                                         </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
-                                <FormField control={form.control} name="postType" render={({ field }) => (<FormItem><FormLabel>e) Post Type (if applicable)</FormLabel><FormControl><Input placeholder="Ordinary / Registered / Speed Post" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="postType" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.postType')}</FormLabel><FormControl><Input placeholder={t('rti.fields.postTypePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             
-                            <FormField control={form.control} name="voluntaryDisclosure" render={({ field }) => (<FormItem><FormLabel>Is this information not made available under voluntary disclosure?</FormLabel><FormControl><Input placeholder="Yes / No / Unknown" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="voluntaryDisclosure" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.voluntaryDisclosure')}</FormLabel><FormControl><Input placeholder={t('rti.fields.voluntaryDisclosurePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </CardContent>
                     </Card>
 
                     {/* 3. Fees & Status */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">3. Fees & Poverty Line Status</CardTitle>
+                            <CardTitle className="text-lg">{t('rti.sections.3')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField control={form.control} name="isBPL" render={({ field }) => (
                                     <FormItem className="space-y-3">
-                                        <FormLabel>Do you belong to Below Poverty Line (BPL)?</FormLabel>
+                                        <FormLabel>{t('rti.fields.isBPL')}</FormLabel>
                                         <FormControl>
                                             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
-                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">{t('rti.fields.yes')}</FormLabel></FormItem>
+                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">{t('rti.fields.no')}</FormLabel></FormItem>
                                             </RadioGroup>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
-                                <FormField control={form.control} name="bplCardDetails" render={({ field }) => (<FormItem><FormLabel>If Yes, BPL Card No. / Proof Details</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="bplCardDetails" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.bplCardDetails')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField control={form.control} name="agreePayFee" render={({ field }) => (
                                     <FormItem className="space-y-3">
-                                        <FormLabel>Do you agree to pay the required fee?</FormLabel>
+                                        <FormLabel>{t('rti.fields.agreePayFee')}</FormLabel>
                                         <FormControl>
                                             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
-                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">{t('rti.fields.yes')}</FormLabel></FormItem>
+                                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">{t('rti.fields.no')}</FormLabel></FormItem>
                                             </RadioGroup>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
-                                <FormField control={form.control} name="feeDepositDetails" render={({ field }) => (<FormItem><FormLabel>Details of Fee Deposit (if already paid)</FormLabel><FormControl><Input placeholder="Receipt No. / IPO No. / Date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="feeDepositDetails" render={({ field }) => (<FormItem><FormLabel>{t('rti.fields.feeDepositDetails')}</FormLabel><FormControl><Input placeholder={t('rti.fields.feeDepositDetailsPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                         </CardContent>
                     </Card>
@@ -211,10 +220,10 @@ export default function RtiPage() {
                     {/* Signature */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Signature</CardTitle>
+                            <CardTitle className="text-lg">{t('rti.sections.signature')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Label htmlFor="signature-pad">Applicant's Signature:</Label>
+                            <Label htmlFor="signature-pad">{t('rti.fields.signatureLabel')}</Label>
                             <div className="mt-2 border rounded-md bg-background w-full max-w-md">
                                 <SignaturePad
                                     ref={sigPadRef}
@@ -223,7 +232,7 @@ export default function RtiPage() {
                             </div>
                             <Button type="button" variant="outline" size="sm" onClick={clearSignature} className="mt-2">
                                 <Eraser className="w-4 h-4 mr-2" />
-                                Clear Signature
+                                {t('rti.fields.clearSignature')}
                             </Button>
                         </CardContent>
                     </Card>
@@ -231,7 +240,7 @@ export default function RtiPage() {
                     <div className="flex justify-end">
                         <Button type="submit" size="lg" disabled={isGenerating} className="w-full md:w-auto">
                             {isGenerating ? <CircleDashed className="w-5 h-5 mr-2 animate-spin" /> : <Download className="w-5 h-5 mr-2" />}
-                            {isGenerating ? 'Generating PDF...' : 'Generate RTI Application PDF'}
+                            {isGenerating ? t('rti.generating') : t('rti.generateBtn')}
                         </Button>
                     </div>
                 </form>
@@ -240,8 +249,9 @@ export default function RtiPage() {
             {/* Hidden PDF Template */}
             <div className="absolute -left-[9999px] top-0 opacity-0 w-[800px]">
                 {pdfData && (
-                    <div ref={pdfTemplateRef} className="w-[800px] bg-white text-black font-serif text-[12pt] leading-relaxed text-justify">
+                    <div ref={pdfTemplateRef} className="w-[800px] bg-white text-black font-['Noto_Sans_Devanagari'] text-[12pt] leading-relaxed text-justify p-[15mm]">
                         <style>{`
+                            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap');
                             .rti-header { text-align: center; margin-bottom: 20px; }
                             .rti-title { font-weight: bold; text-decoration: underline; font-size: 14pt; margin-bottom: 5px; }
                             .rti-subtitle { font-weight: bold; font-size: 12pt; }
@@ -261,64 +271,64 @@ export default function RtiPage() {
                         `}</style>
 
                         <div className="rti-header">
-                            <div className="rti-title">RTI APPLICATION FORM 'A'</div>
-                            <div className="rti-subtitle">See Rule 3(1)</div>
+                            <div className="rti-title">{t('rti.pdf.title')}</div>
+                            <div className="rti-subtitle">{t('rti.pdf.subtitle')}</div>
                         </div>
 
                         <div className="rti-id">
-                            I. D. No.......................<br/>
-                            (For Office Use Only)
+                            {t('rti.pdf.idNo')}<br/>
+                            {t('rti.pdf.officeUse')}
                         </div>
 
                         <div className="rti-to">
-                            To,<br/>
-                            The Public Information Officer /<br/>
-                            Assistant Public Information Officer,<br/>
+                            {t('rti.pdf.to')}<br/>
+                            {t('rti.pdf.pio')}<br/>
+                            {t('rti.pdf.apio')}<br/>
                             <span style={{fontWeight: 'normal'}}>{pdfData.department}</span>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">1.</div>
-                            <div className="rti-label">Full Name of The Applicant :</div>
+                            <div className="rti-label">{t('rti.fields.applicantName')} :</div>
                             <div className="rti-value">{pdfData.applicantName}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">2.</div>
-                            <div className="rti-label">Father Name/Spouse Name :</div>
+                            <div className="rti-label">{t('rti.fields.fatherSpouseName')} :</div>
                             <div className="rti-value">{pdfData.fatherSpouseName}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">3.</div>
-                            <div className="rti-label">Permanent Address :</div>
+                            <div className="rti-label">{t('rti.fields.permanentAddress')} :</div>
                             <div className="rti-value rti-multiline">{pdfData.permanentAddress}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">4.</div>
-                            <div className="rti-label">Correspondence Address :</div>
+                            <div className="rti-label">{t('rti.fields.correspondenceAddress')} :</div>
                             <div className="rti-value rti-multiline">{pdfData.correspondenceAddress}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">5.</div>
-                            <div className="rti-label">Particulars of Information Solicited :</div>
+                            <div className="rti-label">{t('rti.sections.2')} :</div>
                         </div>
 
                         <div className="rti-sub-row">
                             <div className="rti-num">a)</div>
-                            <div className="rti-sub-label">Subject Matter of Information (*):</div>
+                            <div className="rti-sub-label">{t('rti.fields.subjectMatter')} :</div>
                             <div className="rti-value">{pdfData.subjectMatter}</div>
                         </div>
                         <div className="rti-sub-row">
                             <div className="rti-num">b)</div>
-                            <div className="rti-sub-label">The period to which information relates (**):</div>
+                            <div className="rti-sub-label">{t('rti.fields.period')} :</div>
                             <div className="rti-value">{pdfData.period}</div>
                         </div>
                         <div className="rti-sub-row">
                             <div className="rti-num">c)</div>
-                            <div className="rti-sub-label">Specific Details of Information required (***):</div>
+                            <div className="rti-sub-label">{t('rti.fields.details')} :</div>
                         </div>
                         <div style={{ marginLeft: '60px', marginBottom: '15px', border: '1px solid #ccc', padding: '10px', minHeight: '80px' }} className="rti-multiline">
                             {pdfData.details}
@@ -326,43 +336,43 @@ export default function RtiPage() {
 
                         <div className="rti-sub-row">
                             <div className="rti-num">d)</div>
-                            <div className="rti-sub-label">Whether information is required by Post or in person:</div>
+                            <div className="rti-sub-label">{t('rti.fields.deliveryMode')} :</div>
                             <div className="rti-value">{pdfData.deliveryMode}</div>
                         </div>
                         <div className="rti-sub-row">
                             <div className="rti-num">e)</div>
-                            <div className="rti-sub-label">In case by Post (Ordinary/Registered/Speed):</div>
+                            <div className="rti-sub-label">{t('rti.fields.postType')} :</div>
                             <div className="rti-value">{pdfData.postType || 'N/A'}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">6.</div>
-                            <div className="rti-label">Is this information not made available by public authority under voluntary disclosure? :</div>
+                            <div className="rti-label">{t('rti.fields.voluntaryDisclosure')} :</div>
                             <div className="rti-value">{pdfData.voluntaryDisclosure || 'N/A'}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">7.</div>
-                            <div className="rti-label">Do you agree to pay the required fee? :</div>
+                            <div className="rti-label">{t('rti.fields.agreePayFee')} :</div>
                             <div className="rti-value">{pdfData.agreePayFee}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">8.</div>
-                            <div className="rti-label">Have you deposited application fee? :</div>
+                            <div className="rti-label">{t('rti.fields.feeDepositDetails')} :</div>
                             <div className="rti-value">{pdfData.feeDepositDetails ? `Yes (${pdfData.feeDepositDetails})` : 'No'}</div>
                         </div>
 
                         <div className="rti-row">
                             <div className="rti-num">9.</div>
-                            <div className="rti-label">Whether belongs to Below Poverty Line category? :</div>
+                            <div className="rti-label">{t('rti.fields.isBPL')} :</div>
                             <div className="rti-value">{pdfData.isBPL} {pdfData.isBPL === 'Yes' && pdfData.bplCardDetails ? `(Card: ${pdfData.bplCardDetails})` : ''}</div>
                         </div>
 
                         <div className="rti-footer">
                             <div>
-                                Place: _________________<br/><br/>
-                                Date: {new Date().toLocaleDateString()}
+                                {t('rti.pdf.place')} _________________<br/><br/>
+                                {t('rti.pdf.date')} {new Date().toLocaleDateString()}
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 {sigPadRef.current && !sigPadRef.current.isEmpty() && (
@@ -370,14 +380,14 @@ export default function RtiPage() {
                                 )}
                                 <br/>
                                 ____________________________<br/>
-                                <strong>Signature of Applicant</strong>
+                                <strong>{t('rti.pdf.signatureApplicant')}</strong>
                             </div>
                         </div>
 
                         <div className="rti-notes">
-                            (*) Broad Category of the subject to be indicated (such as grant of government service matters/Licenses etc.)<br/>
-                            (**) Relevant period for which information is required to be indicated.<br/>
-                            (***) Specific details of the information are required to be indicated.
+                            {t('rti.pdf.note1')}<br/>
+                            {t('rti.pdf.note2')}<br/>
+                            {t('rti.pdf.note3')}
                         </div>
 
                         {/* Form B - Acknowledgement */}

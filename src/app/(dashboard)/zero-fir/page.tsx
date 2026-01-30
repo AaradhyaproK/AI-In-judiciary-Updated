@@ -78,7 +78,7 @@ export default function ZeroFirPage() {
         if (!pdfTemplateRef.current) return;
 
         const canvas = await html2canvas(pdfTemplateRef.current, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
+        const imgData = canvas.toDataURL('image/jpeg', 0.6);
 
         const pdf = new jsPDF({
             orientation: 'p',
@@ -93,7 +93,7 @@ export default function ZeroFirPage() {
         const ratio = canvasWidth / canvasHeight;
         const height = pdfWidth / ratio;
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, Math.min(height, pdfHeight));
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, Math.min(height, pdfHeight));
         pdf.save('Zero-FIR.pdf');
 
         setPdfData(null);
@@ -104,8 +104,8 @@ export default function ZeroFirPage() {
         <div className="space-y-8 max-w-4xl mx-auto px-4 md:px-0">
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline text-2xl">Zero FIR Filing Application</CardTitle>
-                    <CardDescription>Your reliable partner for filing a First Information Report, anytime, anywhere. This tool helps you document the details of an incident for legal purposes.</CardDescription>
+                    <CardTitle className="font-headline text-2xl">{t('zeroFir.title')}</CardTitle>
+                    <CardDescription>{t('zeroFir.description')}</CardDescription>
                 </CardHeader>
             </Card>
 
@@ -114,45 +114,45 @@ export default function ZeroFirPage() {
                     {/* Section 1: Informant Details */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Section 1: Informant Details</CardTitle>
+                            <CardTitle>{t('zeroFir.sections.1')}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="informantName" render={({ field }) => (<FormItem><FormLabel>1. Name of Informant/Complainant</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="fatherHusbandName" render={({ field }) => (<FormItem><FormLabel>2. Father's/Husband's Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>3. Age</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>4. Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="-- Select --" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem><SelectItem value="Other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="occupation" render={({ field }) => (<FormItem><FormLabel>5. Occupation (if any)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="contactNumber" render={({ field }) => (<FormItem><FormLabel>7. Contact Number</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="address" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>6. Full Residential Address</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="email" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>8. Email Address (if any)</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="informantName" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.informantName')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="fatherHusbandName" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.fatherHusbandName')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.age')}</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.gender')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder={t('zeroFir.fields.genderOptions.select')} /></SelectTrigger></FormControl><SelectContent><SelectItem value="Male">{t('zeroFir.fields.genderOptions.male')}</SelectItem><SelectItem value="Female">{t('zeroFir.fields.genderOptions.female')}</SelectItem><SelectItem value="Other">{t('zeroFir.fields.genderOptions.other')}</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="occupation" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.occupation')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="contactNumber" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.contactNumber')}</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="address" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.address')}</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="email" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.email')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </CardContent>
                     </Card>
 
                     {/* Section 2: Incident Details */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Section 2: Incident Details</CardTitle>
+                            <CardTitle>{t('zeroFir.sections.2')}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="incidentDate" render={({ field }) => (<FormItem><FormLabel>1. Date of Incident</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="incidentTime" render={({ field }) => (<FormItem><FormLabel>2. Time of Incident (approx.)</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="incidentPlace" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>3. Place of Incident</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="offenseType" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Type of Offense (Brief Description)</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="briefFacts" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>4. Brief Facts of the Incident</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="accusedDetails" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>5. Names and Addresses of Accused (if known)</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="witnessDetails" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>6. Names and Addresses of Witnesses (if any)</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="incidentDate" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.incidentDate')}</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="incidentTime" render={({ field }) => (<FormItem><FormLabel>{t('zeroFir.fields.incidentTime')}</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="incidentPlace" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.incidentPlace')}</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="offenseType" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.offenseType')}</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="briefFacts" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.briefFacts')}</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="accusedDetails" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.accusedDetails')}</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="witnessDetails" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>{t('zeroFir.fields.witnessDetails')}</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </CardContent>
                     </Card>
 
                     {/* Section 3: Declaration & Signature */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Section 3: Declaration & Signature</CardTitle>
+                            <CardTitle>{t('zeroFir.sections.3')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground">I hereby declare that the information provided above is true and correct to the best of my knowledge and belief. I understand that any false information given herein may lead to legal action against me.</p>
+                            <p className="text-sm text-muted-foreground">{t('zeroFir.declaration')}</p>
                             <div>
-                                <Label htmlFor="signature-pad">Signature/Thumb Impression of Informant:</Label>
+                                <Label htmlFor="signature-pad">{t('zeroFir.fields.signatureLabel')}</Label>
                                 <div className="mt-2 border rounded-md bg-background">
                                     <SignaturePad
                                         ref={sigPadRef}
@@ -161,7 +161,7 @@ export default function ZeroFirPage() {
                                 </div>
                                 <Button type="button" variant="outline" size="sm" onClick={clearSignature} className="mt-2">
                                     <Eraser className="w-4 h-4 mr-2" />
-                                    Clear Signature
+                                    {t('zeroFir.fields.clearSignature')}
                                 </Button>
                             </div>
                         </CardContent>
@@ -170,7 +170,7 @@ export default function ZeroFirPage() {
                     <div className="flex justify-end">
                         <Button type="submit" size="lg" disabled={isGenerating}>
                             {isGenerating ? <CircleDashed className="w-5 h-5 mr-2 animate-spin" /> : <Download className="w-5 h-5 mr-2" />}
-                            {isGenerating ? 'Generating PDF...' : 'Generate & Download PDF'}
+                            {isGenerating ? t('zeroFir.generating') : t('zeroFir.generateBtn')}
                         </Button>
                     </div>
                 </form>
@@ -179,9 +179,10 @@ export default function ZeroFirPage() {
             {/* Hidden PDF Template */}
             <div className="absolute -left-[9999px] top-0 opacity-0 w-[210mm]">
                 {pdfData && (
-                    <div ref={pdfTemplateRef} className="p-[15mm] bg-white text-black font-serif">
+                    <div ref={pdfTemplateRef} className="p-[15mm] bg-white text-black font-['Noto_Sans_Devanagari']">
                         <style>{`
-                            .pdf-page { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; }
+                            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap');
+                            .pdf-page { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 12pt; color: #000; }
                             .pdf-header { text-align: center; margin-bottom: 10px; }
                             .pdf-header h2 { font-size: 16pt; font-weight: bold; margin: 0; }
                             .pdf-header p { font-size: 10pt; margin: 0; }
@@ -202,78 +203,78 @@ export default function ZeroFirPage() {
                         `}</style>
                         <div className="pdf-page">
                             <div className="pdf-header">
-                                <h2>ZERO FIRST INFORMATION REPORT (ZERO FIR)</h2>
-                                <p>(To be filed at any Police Station, to be transferred to appropriate jurisdiction)</p>
+                                <h2>{t('zeroFir.pdf.title')}</h2>
+                                <p>{t('zeroFir.pdf.subtitle')}</p>
                             </div>
                             <div className="pdf-field-row">
-                                <span className="pdf-label">Date of Report:</span><span className="pdf-data">{new Date().toLocaleDateString()}</span>
-                                <span className="pdf-label" style={{ marginLeft: '30px' }}>Time of Report:</span><span className="pdf-data">{new Date().toLocaleTimeString()}</span>
+                                <span className="pdf-label">{t('zeroFir.pdf.dateReport')}</span><span className="pdf-data">{new Date().toLocaleDateString()}</span>
+                                <span className="pdf-label" style={{ marginLeft: '30px' }}>{t('zeroFir.pdf.timeReport')}</span><span className="pdf-data">{new Date().toLocaleTimeString()}</span>
                             </div>
                             <hr className="pdf-hr" />
 
                             <div className="pdf-main-content">
-                                <h3 className="pdf-section-header">[SECTION 1: INFORMANT DETAILS]</h3>
-                                <div className="pdf-field-row"><span className="pdf-label">1. Name of Informant/Complainant:</span><span className="pdf-data">{pdfData.informantName}</span></div>
-                                <div className="pdf-field-row"><span className="pdf-label">2. Father's/Husband's Name:</span><span className="pdf-data">{pdfData.fatherHusbandName}</span></div>
+                                <h3 className="pdf-section-header">{t('zeroFir.pdf.section1')}</h3>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.informantName')}:</span><span className="pdf-data">{pdfData.informantName}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.fatherHusbandName')}:</span><span className="pdf-data">{pdfData.fatherHusbandName}</span></div>
                                 <div className="pdf-field-row">
-                                    <span className="pdf-label">3. Age:</span><span className="pdf-data">{pdfData.age}</span>
-                                    <span className="pdf-label" style={{ marginLeft: '30px' }}>4. Gender:</span><span className="pdf-data">{pdfData.gender}</span>
+                                    <span className="pdf-label">{t('zeroFir.fields.age')}:</span><span className="pdf-data">{pdfData.age}</span>
+                                    <span className="pdf-label" style={{ marginLeft: '30px' }}>{t('zeroFir.fields.gender')}:</span><span className="pdf-data">{pdfData.gender}</span>
                                 </div>
-                                <div className="pdf-field-row"><span className="pdf-label">5. Occupation (if any):</span><span className="pdf-data">{pdfData.occupation}</span></div>
-                                <div className="pdf-field-row"><span className="pdf-label">6. Full Residential Address:</span><span className="pdf-data">{pdfData.address}</span></div>
-                                <div className="pdf-field-row"><span className="pdf-label">7. Contact Number (Mobile/Landline):</span><span className="pdf-data">{pdfData.contactNumber}</span></div>
-                                <div className="pdf-field-row"><span className="pdf-label">8. Email Address (if any):</span><span className="pdf-data">{pdfData.email}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.occupation')}:</span><span className="pdf-data">{pdfData.occupation}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.address')}:</span><span className="pdf-data">{pdfData.address}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.contactNumber')}:</span><span className="pdf-data">{pdfData.contactNumber}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.email')}:</span><span className="pdf-data">{pdfData.email}</span></div>
 
                                 <hr className="pdf-hr" />
-                                <h3 className="pdf-section-header">[SECTION 2: INCIDENT DETAILS (THE OFFENSE)]</h3>
+                                <h3 className="pdf-section-header">{t('zeroFir.pdf.section2')}</h3>
                                 <div className="pdf-field-row">
-                                    <span className="pdf-label">1. Date of Incident:</span><span className="pdf-data">{pdfData.incidentDate}</span>
-                                    <span className="pdf-label" style={{ marginLeft: '30px' }}>2. Time of Incident (approximate):</span><span className="pdf-data">{pdfData.incidentTime}</span>
+                                    <span className="pdf-label">{t('zeroFir.fields.incidentDate')}:</span><span className="pdf-data">{pdfData.incidentDate}</span>
+                                    <span className="pdf-label" style={{ marginLeft: '30px' }}>{t('zeroFir.fields.incidentTime')}:</span><span className="pdf-data">{pdfData.incidentTime}</span>
                                 </div>
-                                <div className="pdf-field-row"><span className="pdf-label">3. Place of Incident:</span><span className="pdf-data">{pdfData.incidentPlace}</span></div>
-                                <div className="pdf-field-row"><span className="pdf-label">• Type of Offense (Brief Description):</span><span className="pdf-data">{pdfData.offenseType}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.fields.incidentPlace')}:</span><span className="pdf-data">{pdfData.incidentPlace}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">• {t('zeroFir.fields.offenseType')}:</span><span className="pdf-data">{pdfData.offenseType}</span></div>
 
                                 <div className="pdf-multiline-section">
-                                    <div className="pdf-field-row multiline-label"><span className="pdf-label">4. Brief Facts of the Incident:</span></div>
+                                    <div className="pdf-field-row multiline-label"><span className="pdf-label">{t('zeroFir.fields.briefFacts')}:</span></div>
                                     <div className="pdf-field-row"><div className="pdf-data multiline-block">{pdfData.briefFacts}</div></div>
                                 </div>
 
                                 <div className="pdf-multiline-section">
-                                    <div className="pdf-field-row multiline-label"><span className="pdf-label">5. Names and Addresses of Accused (if known):</span></div>
+                                    <div className="pdf-field-row multiline-label"><span className="pdf-label">{t('zeroFir.fields.accusedDetails')}:</span></div>
                                     <div className="pdf-field-row"><div className="pdf-data multiline-block">{pdfData.accusedDetails || 'N/A'}</div></div>
                                 </div>
 
                                 <div className="pdf-multiline-section">
-                                    <div className="pdf-field-row multiline-label"><span className="pdf-label">6. Names and Addresses of Witnesses (if any):</span></div>
+                                    <div className="pdf-field-row multiline-label"><span className="pdf-label">{t('zeroFir.fields.witnessDetails')}:</span></div>
                                     <div className="pdf-field-row"><div className="pdf-data multiline-block">{pdfData.witnessDetails || 'N/A'}</div></div>
                                 </div>
 
                                 <hr className="pdf-hr" />
-                                <h3 className="pdf-section-header">[SECTION 3: DECLARATION & SIGNATURE]</h3>
-                                <p className="pdf-declaration">I hereby declare that the information provided above is true and correct to the best of my knowledge and belief. I understand that any false information given herein may lead to legal action against me.</p>
+                                <h3 className="pdf-section-header">{t('zeroFir.pdf.section3')}</h3>
+                                <p className="pdf-declaration">{t('zeroFir.declaration')}</p>
                                 <div className="pdf-field-row">
-                                    <span className="pdf-label">Signature/Thumb Impression of Informant:</span>
+                                    <span className="pdf-label">{t('zeroFir.fields.signatureLabel')}</span>
                                     <div id="pdf-signature-area" className="pdf-data">
                                         <img id="pdf-signatureImage" src={sigPadRef.current?.toDataURL()} alt="Signature" />
                                     </div>
                                 </div>
-                                <div className="pdf-field-row"><span className="pdf-label">Name of Informant (Print):</span><span className="pdf-data">{pdfData.informantName}</span></div>
+                                <div className="pdf-field-row"><span className="pdf-label">{t('zeroFir.pdf.printName')}</span><span className="pdf-data">{pdfData.informantName}</span></div>
                             </div>
 
                             <div className="pdf-spacer"></div>
 
                             <div className="police-use-section">
-                                <h3 className="pdf-section-header">[FOR POLICE USE ONLY]</h3>
-                                <p className="text-center text-sm mb-4">(This section will be filled by the Police Officer receiving the report)</p>
-                                <div className="police-section"><span className="pdf-label">• FIR No.:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Date & Time of Registration:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Act & Sections:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Police Station:</span></div>
-                                <div className="police-section"><span className="pdf-label">• District:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Signature of Police Officer:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Name of Police Officer:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Designation:</span></div>
-                                <div className="police-section"><span className="pdf-label">• Badge No.:</span></div>
+                                <h3 className="pdf-section-header">{t('zeroFir.pdf.policeUse')}</h3>
+                                <p className="text-center text-sm mb-4">{t('zeroFir.pdf.policeNote')}</p>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.firNo')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.regDate')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.actSection')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.policeStation')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.district')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.policeSig')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.policeName')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.designation')}</span></div>
+                                <div className="police-section"><span className="pdf-label">{t('zeroFir.pdf.badgeNo')}</span></div>
                             </div>
                         </div>
                     </div>

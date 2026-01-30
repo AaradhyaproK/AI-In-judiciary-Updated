@@ -37,6 +37,7 @@ import { useLanguage } from '@/hooks/use-language';
 import { Checkbox } from '@/components/ui/checkbox';
 import { maharashtraDistricts } from '@/lib/districts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TRANSLATIONS } from '@/lib/translations';
 
 
 const formSchema = z.discriminatedUnion("role", [
@@ -72,15 +73,16 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState<'user' | 'lawyer'>('user');
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   const lawyerTypes = [
-    { id: "corporate", label: t('register.lawyerTypes.corporate') },
-    { id: "criminal", label: t('register.lawyerTypes.criminal') },
-    { id: "family", label: t('register.lawyerTypes.family') },
-    { id: "immigration", label: t('register.lawyerTypes.immigration') },
-    { id: "civil", label: t('register.lawyerTypes.civil') },
-    { id: "ip", label: t('register.lawyerTypes.ip') },
+    { id: "corporate", label: t.register.lawyerTypes.corporate },
+    { id: "criminal", label: t.register.lawyerTypes.criminal },
+    { id: "family", label: t.register.lawyerTypes.family },
+    { id: "immigration", label: t.register.lawyerTypes.immigration },
+    { id: "civil", label: t.register.lawyerTypes.civil },
+    { id: "ip", label: t.register.lawyerTypes.ip },
   ];
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -179,8 +181,8 @@ export default function RegisterPage() {
           <div className="mx-auto mb-4 flex items-center justify-center">
             <Icons.logo className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="font-headline text-3xl">{t('register.createAccount')}</CardTitle>
-          <CardDescription>{t('register.joinMessage')}</CardDescription>
+          <CardTitle className="font-headline text-3xl">{t.register.createAccount ?? 'Create an account'}</CardTitle>
+          <CardDescription>{t.register.joinMessage ?? 'Enter your email below to create your account'}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -190,7 +192,6 @@ export default function RegisterPage() {
                 name="role"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>{t('register.registerAs')}</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={(value: 'user' | 'lawyer') => setRole(value)}
