@@ -51,7 +51,6 @@ const DashboardStats = ({ role, uid }: { role: string; uid?: string }) => {
     const caseData = [
         { name: 'Total', value: totalCases, fill: '#8b5cf6' },
         { name: 'Active', value: activeCases, fill: '#3b82f6' },
-        { name: 'Pending', value: pendingCases, fill: '#eab308' },
         { name: 'Solved', value: solvedCases, fill: '#22c55e' },
     ];
 
