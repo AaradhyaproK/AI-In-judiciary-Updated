@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
-import { useAuth } from '@/firebase/provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
 import { CircleDashed, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
@@ -33,6 +34,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useLanguage();
@@ -49,7 +51,16 @@ export default function LoginPage() {
     setIsLoading(true);
     if (!auth) return;
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      
+      if (firestore) {
+        const userDoc = await getDoc(doc(firestore, 'users', userCredential.user.uid));
+        if (userDoc.exists() && userDoc.data()?.role === 'judge') {
+          router.push('/judge');
+          return;
+        }
+      }
+
       router.push('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);

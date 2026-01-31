@@ -111,7 +111,7 @@ export default function DashboardLayout({
             </Sheet>
             
             <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-                <h1 className="flex-1 text-xl font-semibold font-headline">{getPageTitle()}</h1>
+                <h1 className="flex-1 min-w-0 text-lg md:text-xl font-semibold font-headline truncate">{getPageTitle()}</h1>
                 <div className="ml-auto flex items-center gap-2">
                     <LanguageSwitcher />
                     <UserNav />

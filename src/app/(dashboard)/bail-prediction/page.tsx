@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/hooks/use-language';
-import { CircleDashed, Scale, FileText, BrainCircuit, Activity, Gavel, ShieldCheck } from 'lucide-react';
+import { CircleDashed, Scale, FileText, BrainCircuit, Activity, Gavel, ShieldCheck, Mic, MicOff } from 'lucide-react';
 import { analyzeCase } from '@/ai/flows/case-analysis'; // Reusing existing AI flow for the rationale part
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 // --- 1. FAIRNESS ENGINE ---
 class FairnessEngine {
@@ -119,9 +121,75 @@ const judiciary = new JudiciaryAI();
 
 export default function BailPredictionPage() {
     const { t, language } = useLanguage();
+    const { toast } = useToast();
     const [inputText, setInputText] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognitionRef.current = new SpeechRecognition();
+                recognitionRef.current.continuous = true;
+                recognitionRef.current.interimResults = true;
+            }
+        }
+        return () => {
+            if (recognitionRef.current) {
+                recognitionRef.current.onend = null;
+                recognitionRef.current.stop();
+            }
+        };
+    }, []);
+
+    const toggleListening = () => {
+        if (!recognitionRef.current) {
+            toast({ variant: "destructive", title: "Not Supported", description: "Speech recognition is not supported in this browser." });
+            return;
+        }
+
+        if (isListening) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+        } else {
+            const langMap: Record<string, string> = { 
+                'English': 'en-US', 'en': 'en-US',
+                'Hindi': 'hi-IN', 'hi': 'hi-IN',
+                'Marathi': 'mr-IN', 'mr': 'mr-IN'
+            };
+            recognitionRef.current.lang = langMap[language] || langMap[t('languageName')] || 'en-US';
+            
+            recognitionRef.current.onstart = () => setIsListening(true);
+            recognitionRef.current.onend = () => setIsListening(false);
+            recognitionRef.current.onerror = (event: any) => {
+                console.error("Speech recognition error", event.error);
+                setIsListening(false);
+            };
+            recognitionRef.current.onresult = (event: any) => {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    setInputText((prev) => {
+                        const prefix = prev && !/\s$/.test(prev) ? ' ' : '';
+                        return prev + prefix + finalTranscript;
+                    });
+                }
+            };
+            try {
+                recognitionRef.current.start();
+            } catch (error) {
+                console.error("Speech recognition start error", error);
+            }
+        }
+    };
 
     const handleAnalyze = async () => {
         if (!inputText.trim()) return;
@@ -235,12 +303,24 @@ export default function BailPredictionPage() {
                         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                             {t('bailPrediction.inputLabel')}
                         </label>
-                        <Textarea 
-                            placeholder={t('bailPrediction.inputPlaceholder')}
-                            className="min-h-[150px] font-mono text-sm"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                        />
+                        <div className="relative">
+                            <Textarea 
+                                placeholder={t('bailPrediction.inputPlaceholder')}
+                                className="min-h-[150px] font-mono text-sm pr-12"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className={cn("absolute top-2 right-2 h-8 w-8", isListening && "text-red-500 animate-pulse")}
+                                onClick={toggleListening}
+                                title="Speak to type"
+                            >
+                                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                            </Button>
+                        </div>
                     </div>
                     <Button onClick={handleAnalyze} disabled={isAnalyzing || !inputText.trim()} size="lg" className="w-full">
                         {isAnalyzing ? <CircleDashed className="mr-2 h-5 w-5 animate-spin" /> : <Scale className="mr-2 h-5 w-5" />}
