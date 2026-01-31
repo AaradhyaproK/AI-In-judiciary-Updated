@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from "@/firebase/auth/use-user";
 import { useDoc } from "@/firebase/firestore/use-doc";
-import { Gavel, Users, Briefcase, ScrollText, PlusCircle, LayoutDashboard, Shield, Activity } from "lucide-react";
+import { Gavel, Users, Briefcase, ScrollText, PlusCircle, LayoutDashboard, BrainCircuit, Shield, Activity } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from '@/hooks/use-language';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,6 +51,7 @@ const DashboardStats = ({ role, uid }: { role: string; uid?: string }) => {
     const caseData = [
         { name: 'Total', value: totalCases, fill: '#8b5cf6' },
         { name: 'Active', value: activeCases, fill: '#3b82f6' },
+        { name: 'Pending', value: pendingCases, fill: '#eab308' },
         { name: 'Solved', value: solvedCases, fill: '#22c55e' },
     ];
 
