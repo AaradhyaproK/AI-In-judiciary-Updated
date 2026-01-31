@@ -1,5 +1,6 @@
 'use client';
 
+// Dashboard root page
 import { useUser } from '@/firebase/auth/use-user';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useLanguage } from '@/hooks/use-language';

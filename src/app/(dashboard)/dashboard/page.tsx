@@ -1,5 +1,6 @@
 'use client'
 
+// Dashboard main page
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from "@/firebase/auth/use-user";
 import { useDoc } from "@/firebase/firestore/use-doc";
