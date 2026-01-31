@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from "@/firebase/auth/use-user";
 import { useDoc } from "@/firebase/firestore/use-doc";
-import { Gavel, Users, Briefcase, ScrollText, PlusCircle, LayoutDashboard, BrainCircuit, Shield, Activity } from "lucide-react";
+import { Gavel, Users, Briefcase, ScrollText, PlusCircle, LayoutDashboard, Shield, Activity } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from '@/hooks/use-language';
 import { Skeleton } from "@/components/ui/skeleton";
